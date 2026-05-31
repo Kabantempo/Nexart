@@ -1,0 +1,47 @@
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { CreatorProfile } from '../types';
+
+export function useCreatorProfile(userId: string | undefined) {
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetch = useCallback(async () => {
+    if (!userId) { setLoading(false); return; }
+    setLoading(true);
+    const { data, error: err } = await supabase
+      .from('creator_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (err) setError(err.message);
+    else setCreatorProfile(data);
+    setLoading(false);
+  }, [userId]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  const upsert = async (fields: Partial<Omit<CreatorProfile, 'id' | 'user_id' | 'siret_verified' | 'insurance_verified'>>) => {
+    if (!userId) return { error: 'Non connecté' };
+    setSaving(true);
+    const payload = { user_id: userId, ...fields };
+    const { data, error: err } = await supabase
+      .from('creator_profiles')
+      .upsert(payload, { onConflict: 'user_id' })
+      .select()
+      .single();
+    setSaving(false);
+    if (err) return { error: err.message };
+    setCreatorProfile(data);
+    return { error: null };
+  };
+
+  const updateBio = async (bio: string) => {
+    if (!userId) return;
+    await supabase.from('profiles').update({ bio }).eq('id', userId);
+  };
+
+  return { creatorProfile, loading, saving, error, upsert, updateBio, refetch: fetch };
+}

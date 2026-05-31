@@ -264,8 +264,8 @@ EXPO_PUBLIC_STRIPE_KEY=pk_...
 - [x] Auth flow complet (Welcome → Login/Register → RoleScreen)
 - [x] Navigation conditionnelle par rôle (Creator / Organizer tabs)
 - [x] Landing page marketing (`website/index.html`)
-- [ ] Schéma BDD Supabase créé (SQL à exécuter)
-- [ ] Row Level Security (RLS) Supabase
+- [x] Schéma BDD Supabase créé (`supabase/schema.sql`)
+- [x] Row Level Security (RLS) Supabase
 
 ### Profils (A)
 - [ ] Écran création profil artisan (disciplines, localisation, bio)
