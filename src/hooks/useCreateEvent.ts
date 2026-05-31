@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { EventType, EventStatus } from '../types';
+import { geocodeCity } from '../utils/geocode';
 
 export interface EventFormData {
   title: string;
@@ -61,8 +62,13 @@ export function useCreateEvent() {
     if (err) return { error: err, data: null };
 
     setSaving(true);
+    // Auto-geocode city
+    const geo = form.city ? await geocodeCity(form.city, form.region) : null;
+
     const payload = {
       organizer_id:     organizerId,
+      lat:              geo?.lat ?? null,
+      lng:              geo?.lng ?? null,
       title:            form.title.trim(),
       description:      form.description.trim() || null,
       event_type:       form.event_type,

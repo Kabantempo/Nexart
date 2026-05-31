@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { CreatorProfile } from '../types';
+import { geocodeCity } from '../utils/geocode';
 
 export function useCreatorProfile(userId: string | undefined) {
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
@@ -26,7 +27,12 @@ export function useCreatorProfile(userId: string | undefined) {
   const upsert = async (fields: Partial<Omit<CreatorProfile, 'id' | 'user_id' | 'siret_verified' | 'insurance_verified'>>) => {
     if (!userId) return { error: 'Non connecté' };
     setSaving(true);
-    const payload = { user_id: userId, ...fields };
+    let geoFields: { lat?: number; lng?: number } = {};
+    if (fields.city) {
+      const geo = await geocodeCity(fields.city, (fields as any).region);
+      if (geo) geoFields = { lat: geo.lat, lng: geo.lng };
+    }
+    const payload = { user_id: userId, ...fields, ...geoFields };
     const { data, error: err } = await supabase
       .from('creator_profiles')
       .upsert(payload, { onConflict: 'user_id' })

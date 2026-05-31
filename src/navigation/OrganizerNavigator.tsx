@@ -5,6 +5,7 @@ import { colors } from '../constants/theme';
 import OrganizerHomeScreen from '../screens/organizer/HomeScreen';
 import OrganizerEventStack from './OrganizerEventStack';
 import CreateEventScreen   from '../screens/organizer/CreateEventScreen';
+import CreatorMapScreen    from '../screens/organizer/CreatorMapScreen';
 import MessageStack        from './MessageStack';
 import ProfileScreen       from '../screens/shared/ProfileScreen';
 
@@ -23,6 +24,7 @@ export default function OrganizerNavigator() {
       <Tab.Screen name="Tableau de bord" component={OrganizerHomeScreen} />
       <Tab.Screen name="Mes marchés"     component={OrganizerEventStack} />
       <Tab.Screen name="Créer"           component={CreateEventScreen} />
+      <Tab.Screen name="Carte créateurs" component={CreatorMapScreen} />
       <Tab.Screen name="Messages"        component={MessageStack} />
       <Tab.Screen name="Profil"          component={ProfileScreen} />
     </Tab.Navigator>
