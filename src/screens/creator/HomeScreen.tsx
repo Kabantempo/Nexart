@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useAuth } from '../../stores/auth';
 import { useEvents } from '../../hooks/useEvents';
 import { useCreatorApplications } from '../../hooks/useApplications';
+import { useCreatorProfile } from '../../hooks/useCreatorProfile';
+import { useEventRecommendations } from '../../hooks/useRecommendations';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 import { Event, Application } from '../../types';
 
@@ -49,8 +51,10 @@ function ApplicationItem({ application }: { application: any }) {
 
 export default function CreatorHomeScreen() {
   const { profile } = useAuth();
+  const { creatorProfile } = useCreatorProfile(profile?.id);
   const { events, loading: evLoading } = useEvents({ limit: 5 });
   const { applications, loading: appLoading } = useCreatorApplications(profile?.id);
+  const { events: recommended, loading: recLoading } = useEventRecommendations(creatorProfile, 3);
 
   const pendingCount = applications.filter(a => a.status === 'pending').length;
   const acceptedCount = applications.filter(a => a.status === 'accepted').length;
@@ -70,6 +74,13 @@ export default function CreatorHomeScreen() {
           <Text style={styles.statLabel}>Acceptées</Text>
         </View>
       </View>
+
+      {recommended.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>✨ Recommandés pour vous</Text>
+          {recommended.map(e => <EventCard key={e.id} event={e} />)}
+        </>
+      )}
 
       <Text style={styles.sectionTitle}>Prochains marchés</Text>
       {evLoading ? (

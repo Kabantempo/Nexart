@@ -11,6 +11,9 @@ import { usePublicCreatorProfile } from '../../hooks/usePublicCreators';
 import { useProfileReviews } from '../../hooks/useReviews';
 import { useFavoriteCreator } from '../../hooks/useFavorites';
 import { useVisitorInquiry } from '../../hooks/useVisitorInquiry';
+import { useFollow, useFollowCounts } from '../../hooks/useFollow';
+import { usePosts } from '../../hooks/usePosts';
+import PostCard from '../../components/PostCard';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 type Props = {
@@ -103,6 +106,8 @@ export default function PublicCreatorProfileScreen({ navigation, route }: Props)
   const { creator, upcomingEvents, loading } = usePublicCreatorProfile(creatorId);
   const { average, count, isTrusted } = useProfileReviews(creatorId);
   const { isFav, toggle } = useFavoriteCreator(profile?.id, creatorId);
+  const { isFollowing, toggle: toggleFollow, followers } = useFollow(profile?.id, creatorId);
+  const { posts } = usePosts({ creatorId, limit: 6 });
 
   const [showContact, setShowContact] = useState(false);
 
@@ -152,9 +157,20 @@ export default function PublicCreatorProfileScreen({ navigation, route }: Props)
             {creator.insurance_verified && <View style={s.badge}><Text style={s.badgeText}>Assuré ✓</Text></View>}
           </View>
         </View>
-        <TouchableOpacity onPress={profile ? toggle : () => Alert.alert('Compte requis', 'Créez un compte pour sauvegarder.')}>
-          <Text style={[s.favBtn, isFav && s.favBtnActive]}>{isFav ? '♥' : '♡'}</Text>
-        </TouchableOpacity>
+        <View style={{ gap: 6, alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            style={[s.followBtn, isFollowing && s.followBtnActive]}
+            onPress={() => profile ? toggleFollow() : Alert.alert('Compte requis', 'Créez un compte pour suivre des créateurs.')}
+          >
+            <Text style={[s.followBtnText, isFollowing && s.followBtnTextActive]}>
+              {isFollowing ? '✓ Suivi' : '+ Suivre'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={s.followersCount}>{followers} abonnés</Text>
+          <TouchableOpacity onPress={profile ? toggle : () => Alert.alert('Compte requis')}>
+            <Text style={[s.favBtn, isFav && s.favBtnActive]}>{isFav ? '♥' : '♡'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Bio */}
@@ -204,6 +220,14 @@ export default function PublicCreatorProfileScreen({ navigation, route }: Props)
         </>
       )}
 
+      {/* Posts récents */}
+      {posts.length > 0 && (
+        <>
+          <Text style={s.section}>Posts récents</Text>
+          {posts.slice(0, 3).map(post => <PostCard key={post.id} post={post} showCreator={false} />)}
+        </>
+      )}
+
       {/* Contact */}
       <Text style={s.section}>Contacter</Text>
       {!showContact
@@ -238,7 +262,12 @@ const s = StyleSheet.create({
   badges:    { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.xs },
   badge:     { backgroundColor: colors.secondary + '15', borderRadius: radius.sm, paddingHorizontal: spacing.xs, paddingVertical: 2 },
   badgeText: { ...typography.caption, color: colors.secondary, fontSize: 10, fontWeight: '600' },
-  favBtn:    { fontSize: 28, color: colors.border },
+  followBtn: { borderWidth: 1, borderColor: colors.primary, borderRadius: radius.full, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  followBtnActive: { backgroundColor: colors.primary },
+  followBtnText: { ...typography.caption, color: colors.primary, fontWeight: '700' },
+  followBtnTextActive: { color: colors.text.inverse },
+  followersCount: { ...typography.caption, color: colors.text.secondary },
+  favBtn:    { fontSize: 24, color: colors.border },
   favBtnActive: { color: colors.error },
   bio:       { ...typography.body, color: colors.text.secondary, lineHeight: 22, marginBottom: spacing.md },
   tagRow:    { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md },
