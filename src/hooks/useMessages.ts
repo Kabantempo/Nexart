@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Message } from '../types';
+import { getPushTokenForUser, sendPushNotification } from './usePushNotifications';
 
 export function useMessages(conversationId: string | undefined, currentUserId: string | undefined) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -67,7 +68,7 @@ export function useMessages(conversationId: string | undefined, currentUserId: s
     return () => { supabase.removeChannel(channel); };
   }, [conversationId, currentUserId, fetchMessages, markRead]);
 
-  const sendMessage = async (content: string): Promise<boolean> => {
+  const sendMessage = async (content: string, otherPartyId?: string): Promise<boolean> => {
     if (!conversationId || !currentUserId || !content.trim()) return false;
     setSending(true);
     const { error } = await supabase.from('messages').insert({
@@ -75,6 +76,11 @@ export function useMessages(conversationId: string | undefined, currentUserId: s
       sender_id: currentUserId,
       content: content.trim(),
     });
+    if (!error && otherPartyId) {
+      getPushTokenForUser(otherPartyId).then(token => {
+        if (token) sendPushNotification(token, '💬 Nouveau message', content.trim().slice(0, 80));
+      });
+    }
     setSending(false);
     return !error;
   };

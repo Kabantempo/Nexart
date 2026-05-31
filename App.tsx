@@ -4,12 +4,18 @@ import { supabase } from './src/lib/supabase';
 import { AuthContext } from './src/stores/auth';
 import { Profile } from './src/types';
 import RootNavigator from './src/navigation';
+import { usePushNotifications } from './src/hooks/usePushNotifications';
+
+function AppInner({ profile }: { profile: Profile | null }) {
+  usePushNotifications(profile?.id);
+  return <RootNavigator />;
+}
 
 export default function App() {
-  const [session, setSession]   = useState<Session | null>(null);
-  const [user, setUser]         = useState<User | null>(null);
-  const [profile, setProfile]   = useState<Profile | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser]       = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -42,7 +48,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ session, user, profile, loading, refetchProfile, setProfile }}>
-      <RootNavigator />
+      <AppInner profile={profile} />
     </AuthContext.Provider>
   );
 }

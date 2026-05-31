@@ -80,19 +80,22 @@ function ApplicationCard({ item, userId }: { item: any; userId: string }) {
   const hasReviewed = useHasReviewed(event?.id ?? '', userId);
   const [showReview, setShowReview] = useState(false);
 
+  const organizerId = event?.organizer_id ?? '';
+
   const openChat = async () => {
-    if (!event?.id || !userId) return;
-    const convId = await getOrCreateConversation(event.id, userId, '');
+    if (!event?.id || !userId || !organizerId) return;
+    const convId = await getOrCreateConversation(event.id, userId, organizerId);
     if (!convId) { Alert.alert('Erreur', 'Conversation introuvable.'); return; }
     nav.getParent()?.navigate('Messages', {
       screen: 'Conversation',
-      params: { conversationId: convId, eventTitle: event.title ?? 'Marché', otherPartyName: 'Organisateur' },
+      params: { conversationId: convId, eventTitle: event.title ?? 'Marché', otherPartyName: 'Organisateur', otherPartyId: organizerId },
     });
   };
 
   const handleReview = async (rating: number, comment: string, tags: string[]) => {
+    if (!organizerId) { Alert.alert('Erreur', 'Organisateur introuvable.'); return; }
     const { error } = await submitReview({
-      eventId: event.id, reviewerId: userId, reviewedId: 'unknown',
+      eventId: event.id, reviewerId: userId, reviewedId: organizerId,
       reviewerRole: 'creator', rating, comment, tags,
     });
     if (error) Alert.alert('Erreur', error);

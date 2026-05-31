@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../stores/auth';
 import { getOrCreateConversation } from '../../hooks/useConversations';
 import { submitReview, useHasReviewed } from '../../hooks/useReviews';
+import { getPushTokenForUser, sendPushNotification } from '../../hooks/usePushNotifications';
 import { ApplicationStatus, ORGANIZER_REVIEW_TAGS } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
@@ -266,7 +267,18 @@ export default function EventApplicationsScreen({ navigation, route }: Props) {
         text: label,
         style: newStatus === 'refused' ? 'destructive' : 'default',
         onPress: async () => {
+          const app = applications.find(a => a.id === applicationId);
           await supabase.from('applications').update({ status: newStatus }).eq('id', applicationId);
+          if (app?.creator?.id) {
+            const token = await getPushTokenForUser(app.creator.id);
+            if (token) await sendPushNotification(
+              token,
+              newStatus === 'accepted' ? '🎉 Candidature acceptée !' : 'Candidature refusée',
+              newStatus === 'accepted'
+                ? `Votre candidature pour "${eventTitle}" a été acceptée.`
+                : `Votre candidature pour "${eventTitle}" n'a pas été retenue.`,
+            );
+          }
           fetchApplications();
         },
       },

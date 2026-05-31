@@ -11,6 +11,7 @@ export type MessageStackParams = {
     conversationId: string;
     eventTitle: string;
     otherPartyName: string;
+    otherPartyId?: string;
   };
 };
 

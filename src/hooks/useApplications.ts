@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Application, ApplicationStatus } from '../types';
 
 interface ApplicationWithEvent extends Application {
-  event: { id: string; title: string; city: string | null; start_date: string; cover_image: string | null };
+  event: { id: string; title: string; city: string | null; start_date: string; end_date: string | null; cover_image: string | null; organizer_id: string };
 }
 
 interface ApplicationWithCreator extends Application {
@@ -20,7 +20,7 @@ export function useCreatorApplications(creatorId: string | undefined) {
     setLoading(true);
     const { data, error: err } = await supabase
       .from('applications')
-      .select('*, event:events(id, title, city, start_date, cover_image)')
+      .select('*, event:events(id, title, city, start_date, end_date, cover_image, organizer_id)')
       .eq('creator_id', creatorId)
       .order('created_at', { ascending: false })
       .limit(20);

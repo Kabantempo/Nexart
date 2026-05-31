@@ -39,7 +39,7 @@ function Bubble({ msg, isOwn }: { msg: Message; isOwn: boolean }) {
 }
 
 export default function ConversationScreen({ navigation, route }: Props) {
-  const { conversationId, eventTitle, otherPartyName } = route.params;
+  const { conversationId, eventTitle, otherPartyName, otherPartyId } = route.params;
   const { profile } = useAuth();
   const { messages, loading, sending, sendMessage } = useMessages(conversationId, profile?.id);
   const [text, setText] = useState('');
@@ -56,7 +56,7 @@ export default function ConversationScreen({ navigation, route }: Props) {
     if (!text.trim() || sending) return;
     const content = text.trim();
     setText('');
-    await sendMessage(content);
+    await sendMessage(content, otherPartyId);
   };
 
   // Group messages by day

@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, Image, Platform,
+  ScrollView, Alert, ActivityIndicator, Image, Platform, FlatList, Dimensions,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+
+const SCREEN_W = Dimensions.get('window').width;
+const IMG_SIZE = (SCREEN_W - 32 * 2 - 8 * 2) / 3;
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../stores/auth';
 import { useCreatorProfile } from '../../hooks/useCreatorProfile';
@@ -59,6 +62,79 @@ const tagStyles = StyleSheet.create({
   tagActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   tagText: { ...typography.caption, color: colors.text.secondary },
   tagTextActive: { color: colors.text.inverse, fontWeight: '600' },
+});
+
+// ─── Portfolio section ────────────────────────────────────────────────────────
+
+function PortfolioSection({ userId, images, onUpdate }: { userId: string; images: string[]; onUpdate: (imgs: string[]) => Promise<any> }) {
+  const [uploading, setUploading] = useState(false);
+
+  const addPhoto = async () => {
+    if (images.length >= 20) { Alert.alert('Maximum atteint', '20 photos maximum.'); return; }
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Permission requise'); return; }
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsMultipleSelection: true,
+      quality: 0.8, selectionLimit: Math.min(5, 20 - images.length),
+    });
+    if (result.canceled) return;
+    setUploading(true);
+    const newUrls: string[] = [];
+    for (const asset of result.assets) {
+      const ext = asset.uri.split('.').pop() ?? 'jpg';
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const resp = await fetch(asset.uri);
+      const blob = await resp.blob();
+      const { error } = await supabase.storage.from('portfolios').upload(path, blob, { upsert: false });
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage.from('portfolios').getPublicUrl(path);
+        newUrls.push(publicUrl);
+      }
+    }
+    if (newUrls.length) await onUpdate([...images, ...newUrls]);
+    setUploading(false);
+  };
+
+  const removePhoto = (url: string) =>
+    Alert.alert('Supprimer cette photo ?', '', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: () => onUpdate(images.filter(u => u !== url)) },
+    ]);
+
+  return (
+    <View style={{ marginTop: spacing.xl }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+        <Text style={styles.fieldLabel}>Portfolio ({images.length}/20)</Text>
+        <TouchableOpacity onPress={addPhoto} disabled={uploading}>
+          <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 13 }}>
+            {uploading ? 'Upload…' : '+ Ajouter'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {images.length === 0 ? (
+        <TouchableOpacity style={porto.placeholder} onPress={addPhoto}>
+          <Text style={porto.placeholderText}>Ajoutez vos créations · 20 photos max</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={porto.grid}>
+          {images.map(url => (
+            <TouchableOpacity key={url} onLongPress={() => removePhoto(url)}>
+              <Image source={{ uri: url }} style={porto.img} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const porto = StyleSheet.create({
+  placeholder: { height: 80, borderWidth: 1, borderColor: colors.border, borderStyle: 'dashed', borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  placeholderText: { ...typography.caption, color: colors.text.secondary },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  img: { width: IMG_SIZE, height: IMG_SIZE, borderRadius: radius.sm, backgroundColor: colors.surface },
 });
 
 // ─── Creator profile section ──────────────────────────────────────────────────
@@ -143,6 +219,8 @@ function CreatorProfileSection({ userId }: { userId: string }) {
         <TouchableOpacity style={styles.btnSecondary} onPress={() => setIsEditing(true)}>
           <Text style={styles.btnSecondaryText}>Modifier mon profil</Text>
         </TouchableOpacity>
+
+        <PortfolioSection userId={userId} images={creatorProfile.portfolio_images} onUpdate={(imgs) => upsert({ portfolio_images: imgs })} />
       </View>
     );
   }
@@ -221,7 +299,7 @@ function CreatorProfileSection({ userId }: { userId: string }) {
 
 export default function ProfileScreen() {
   const { profile, refetchProfile } = useAuth();
-  const { average, count } = useProfileReviews(profile?.id);
+  const { average, count, isTrusted } = useProfileReviews(profile?.id);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const pickAvatar = async () => {
@@ -275,6 +353,9 @@ export default function ProfileScreen() {
           {average !== null && (
             <Text style={styles.rating}>{'★'.repeat(Math.round(average))} {average}/5 · {count} avis</Text>
           )}
+          {isTrusted && (
+            <View style={styles.trustBadge}><Text style={styles.trustBadgeText}>✓ Créateur de confiance</Text></View>
+          )}
         </View>
       </View>
 
@@ -302,6 +383,8 @@ const styles = StyleSheet.create({
   avatarEditIcon: { color: colors.text.inverse, fontSize: 11 },
   avatarText: { ...typography.h2, color: colors.primary },
   rating: { ...typography.caption, color: colors.primary, marginTop: 3 },
+  trustBadge: { marginTop: 4, alignSelf: 'flex-start', backgroundColor: colors.secondary + '20', borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 2, borderWidth: 1, borderColor: colors.secondary + '50' },
+  trustBadgeText: { ...typography.caption, color: colors.secondary, fontWeight: '700', fontSize: 10 },
   name: { ...typography.h3, color: colors.text.primary },
   roleLabel: { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
 

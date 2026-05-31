@@ -23,7 +23,9 @@ export function useProfileReviews(userId: string | undefined) {
     ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
     : null;
 
-  return { reviews, loading, average, count: reviews.length, refetch: fetch };
+  const isTrusted = reviews.length >= 5 && average !== null && average >= 4;
+
+  return { reviews, loading, average, count: reviews.length, isTrusted, refetch: fetch };
 }
 
 export function useHasReviewed(eventId: string, reviewerId: string | undefined) {

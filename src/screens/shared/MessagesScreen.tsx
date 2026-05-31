@@ -89,6 +89,7 @@ export default function MessagesScreen({ navigation }: Props) {
                 conversationId: item.id,
                 eventTitle:     item.event?.title ?? 'Marché',
                 otherPartyName: other?.full_name ?? '—',
+                otherPartyId:   other?.id,
               });
             }}
           />
