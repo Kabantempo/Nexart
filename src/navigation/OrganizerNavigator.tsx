@@ -2,11 +2,11 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { colors } from '../constants/theme';
 
-import OrganizerHomeScreen  from '../screens/organizer/HomeScreen';
-import OrganizerEventStack  from './OrganizerEventStack';
-import CreateEventScreen    from '../screens/organizer/CreateEventScreen';
-import MessagesScreen       from '../screens/shared/MessagesScreen';
-import ProfileScreen        from '../screens/shared/ProfileScreen';
+import OrganizerHomeScreen from '../screens/organizer/HomeScreen';
+import OrganizerEventStack from './OrganizerEventStack';
+import CreateEventScreen   from '../screens/organizer/CreateEventScreen';
+import MessageStack        from './MessageStack';
+import ProfileScreen       from '../screens/shared/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,11 +20,11 @@ export default function OrganizerNavigator() {
         tabBarInactiveTintColor: colors.text.secondary,
       }}
     >
-      <Tab.Screen name="Tableau de bord"  component={OrganizerHomeScreen} />
-      <Tab.Screen name="Mes marchés"      component={OrganizerEventStack} />
-      <Tab.Screen name="Créer"            component={CreateEventScreen} />
-      <Tab.Screen name="Messages"         component={MessagesScreen} />
-      <Tab.Screen name="Profil"           component={ProfileScreen} />
+      <Tab.Screen name="Tableau de bord" component={OrganizerHomeScreen} />
+      <Tab.Screen name="Mes marchés"     component={OrganizerEventStack} />
+      <Tab.Screen name="Créer"           component={CreateEventScreen} />
+      <Tab.Screen name="Messages"        component={MessageStack} />
+      <Tab.Screen name="Profil"          component={ProfileScreen} />
     </Tab.Navigator>
   );
 }

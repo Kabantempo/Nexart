@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator,
+  ScrollView, Alert, ActivityIndicator, Image, Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../stores/auth';
 import { useCreatorProfile } from '../../hooks/useCreatorProfile';
+import { useProfileReviews } from '../../hooks/useReviews';
 import { DISCIPLINE_TAGS, TravelRadius } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
@@ -218,19 +220,61 @@ function CreatorProfileSection({ userId }: { userId: string }) {
 // ─── Main ProfileScreen ───────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const { profile } = useAuth();
+  const { profile, refetchProfile } = useAuth();
+  const { average, count } = useProfileReviews(profile?.id);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const pickAvatar = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Permission requise'); return; }
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true, aspect: [1, 1], quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0] || !profile?.id) return;
+
+    setUploadingAvatar(true);
+    const asset = result.assets[0];
+    const ext = asset.uri.split('.').pop() ?? 'jpg';
+    const path = `${profile.id}/avatar.${ext}`;
+
+    const response = await fetch(asset.uri);
+    const blob = await response.blob();
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true });
+    if (upErr) { Alert.alert('Erreur upload', upErr.message); setUploadingAvatar(false); return; }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+    await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', profile.id);
+    await refetchProfile();
+    setUploadingAvatar(false);
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-        </View>
-        <View>
+        <TouchableOpacity onPress={pickAvatar} disabled={uploadingAvatar}>
+          {profile?.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImg} />
+          ) : (
+            <View style={styles.avatar}>
+              {uploadingAvatar
+                ? <ActivityIndicator color={colors.primary} />
+                : <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+              }
+            </View>
+          )}
+          <View style={styles.avatarEditBadge}><Text style={styles.avatarEditIcon}>✎</Text></View>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
           <Text style={styles.name}>{profile?.full_name}</Text>
           <Text style={styles.roleLabel}>
             {profile?.role === 'creator' ? 'Créateur / Artisan' : 'Organisateur'}
           </Text>
+          {average !== null && (
+            <Text style={styles.rating}>{'★'.repeat(Math.round(average))} {average}/5 · {count} avis</Text>
+          )}
         </View>
       </View>
 
@@ -252,11 +296,12 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl, paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
 
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl },
-  avatar: {
-    width: 56, height: 56, borderRadius: 28,
-    backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center',
-  },
+  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' },
+  avatarImg: { width: 64, height: 64, borderRadius: 32 },
+  avatarEditBadge: { position: 'absolute', bottom: 0, right: 0, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  avatarEditIcon: { color: colors.text.inverse, fontSize: 11 },
   avatarText: { ...typography.h2, color: colors.primary },
+  rating: { ...typography.caption, color: colors.primary, marginTop: 3 },
   name: { ...typography.h3, color: colors.text.primary },
   roleLabel: { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
 
