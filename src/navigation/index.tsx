@@ -7,6 +7,8 @@ import { colors } from '../constants/theme';
 import AuthNavigator      from './AuthNavigator';
 import CreatorNavigator   from './CreatorNavigator';
 import OrganizerNavigator from './OrganizerNavigator';
+import VisitorNavigator   from './VisitorNavigator';
+import DiscoverStack      from './DiscoverStack';
 
 const Stack = createStackNavigator();
 
@@ -33,11 +35,16 @@ export default function RootNavigator() {
     }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <>
+            <Stack.Screen name="Auth"     component={AuthNavigator} />
+            <Stack.Screen name="Discover" component={DiscoverStack} />
+          </>
         ) : profile?.role === 'creator' ? (
           <Stack.Screen name="Creator"   component={CreatorNavigator} />
-        ) : (
+        ) : profile?.role === 'organizer' ? (
           <Stack.Screen name="Organizer" component={OrganizerNavigator} />
+        ) : (
+          <Stack.Screen name="Visitor"   component={VisitorNavigator} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

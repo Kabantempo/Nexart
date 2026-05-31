@@ -1,4 +1,4 @@
-export type UserRole = 'creator' | 'organizer';
+export type UserRole = 'creator' | 'organizer' | 'visitor';
 export type TravelRadius = '5' | '10' | '25' | 'national';
 export type EventType = 'permanent' | 'seasonal' | 'popup' | 'salon' | 'fair';
 export type EventStatus = 'draft' | 'published' | 'closed';
@@ -147,3 +147,32 @@ export type DisciplineTag = typeof DISCIPLINE_TAGS[number];
 
 export const CREATOR_REVIEW_TAGS = ['Ponctuel', 'Respectueux des règles', 'Qualité produit', 'Professionnel'] as const;
 export const ORGANIZER_REVIEW_TAGS = ['Fiable', 'Stand bien géré', 'Bon flux client', 'Communication claire'] as const;
+
+export interface VisitorInquiry {
+  id: string;
+  visitor_id: string;
+  creator_id: string;
+  message: string;
+  reply: string | null;
+  replied_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FavoriteEvent   { user_id: string; event_id: string;   created_at: string }
+export interface FavoriteCreator { user_id: string; creator_id: string; created_at: string }
+
+export interface PublicCreatorProfile {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  disciplines: string[];
+  city: string | null;
+  region: string | null;
+  portfolio_images: string[];
+  instagram: string | null;
+  website: string | null;
+  siret_verified: boolean;
+  insurance_verified: boolean;
+}

@@ -6,7 +6,7 @@ import { useAuth } from '../../stores/auth';
 import { Profile } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
-type Props = { navigation: StackNavigationProp<AuthStackParams, 'Welcome'> };
+type Props = { navigation: StackNavigationProp<AuthStackParams, 'Welcome'> & { getParent: () => any } };
 
 const MOCK_CREATOR: Profile = {
   id: 'dev-creator-id',
@@ -21,6 +21,15 @@ const MOCK_ORGANIZER: Profile = {
   id: 'dev-organizer-id',
   role: 'organizer',
   full_name: 'Bob Martin (test)',
+  avatar_url: null,
+  bio: null,
+  created_at: new Date().toISOString(),
+};
+
+const MOCK_VISITOR: Profile = {
+  id: 'dev-visitor-id',
+  role: 'visitor',
+  full_name: 'Clara Visiteur (test)',
   avatar_url: null,
   bio: null,
   created_at: new Date().toISOString(),
@@ -43,6 +52,9 @@ export default function WelcomeScreen({ navigation }: Props) {
         <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.btnSecondaryText}>Se connecter</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.btnExplore} onPress={() => (navigation as any).getParent()?.navigate('Discover')}>
+          <Text style={styles.btnExploreText}>🔍 Explorer sans compte</Text>
+        </TouchableOpacity>
 
         {/* Mode test — visible uniquement en développement */}
         {__DEV__ && (
@@ -53,7 +65,10 @@ export default function WelcomeScreen({ navigation }: Props) {
                 <Text style={styles.devBtnText}>🎨 Créateur</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.devBtn, styles.devBtnAlt]} onPress={() => setProfile(MOCK_ORGANIZER)}>
-                <Text style={styles.devBtnText}>🗓 Organisateur</Text>
+                <Text style={styles.devBtnText}>🗓 Orga</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.devBtn, { borderColor: '#8B7CF640' }]} onPress={() => setProfile(MOCK_VISITOR)}>
+                <Text style={styles.devBtnText}>👀 Visiteur</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -73,6 +88,8 @@ const styles = StyleSheet.create({
   btnPrimaryText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '600' },
   btnSecondary:   { borderWidth: 1, borderColor: colors.border, padding: spacing.md, borderRadius: radius.md, alignItems: 'center' },
   btnSecondaryText: { ...typography.label, color: colors.text.primary, fontSize: 16 },
+  btnExplore: { borderWidth: 1, borderColor: colors.secondary, padding: spacing.md, borderRadius: radius.md, alignItems: 'center' },
+  btnExploreText: { ...typography.label, color: colors.secondary, fontSize: 16 },
 
   devSection: {
     marginTop: spacing.md,

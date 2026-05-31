@@ -48,22 +48,20 @@ export default function RegisterScreen({ navigation }: Props) {
 
       <Text style={styles.sectionLabel}>Je suis…</Text>
       <View style={styles.roleRow}>
-        <TouchableOpacity
-          style={[styles.roleCard, role === 'creator' && styles.roleCardActive]}
-          onPress={() => setRole('creator')}
-        >
+        <TouchableOpacity style={[styles.roleCard, role === 'creator' && styles.roleCardActive]} onPress={() => setRole('creator')}>
           <Text style={styles.roleIcon}>🎨</Text>
           <Text style={[styles.roleTitle, role === 'creator' && styles.roleTextActive]}>Créateur</Text>
           <Text style={styles.roleDesc}>J'expose mes créations</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.roleCard, styles.roleCardRight, role === 'organizer' && styles.roleCardActiveAlt]}
-          onPress={() => setRole('organizer')}
-        >
+        <TouchableOpacity style={[styles.roleCard, role === 'organizer' && styles.roleCardActiveAlt]} onPress={() => setRole('organizer')}>
           <Text style={styles.roleIcon}>🗓️</Text>
           <Text style={[styles.roleTitle, role === 'organizer' && styles.roleTextActiveAlt]}>Organisateur</Text>
           <Text style={styles.roleDesc}>J'organise des marchés</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.roleCard, role === 'visitor' && styles.roleCardActiveVisitor]} onPress={() => setRole('visitor')}>
+          <Text style={styles.roleIcon}>👀</Text>
+          <Text style={[styles.roleTitle, role === 'visitor' && styles.roleTextActiveVisitor]}>Visiteur</Text>
+          <Text style={styles.roleDesc}>J'explore les marchés</Text>
         </TouchableOpacity>
       </View>
 
@@ -127,6 +125,8 @@ const styles = StyleSheet.create({
   roleCardRight: {},
   roleCardActive: { borderColor: colors.primary },
   roleCardActiveAlt: { borderColor: colors.secondary },
+  roleCardActiveVisitor: { borderColor: '#8B7CF6' },
+  roleTextActiveVisitor: { color: '#8B7CF6' },
   roleIcon: { fontSize: 28, marginBottom: spacing.xs },
   roleTitle: { ...typography.h3, color: colors.text.primary, marginBottom: 2 },
   roleTextActive: { color: colors.primary },
