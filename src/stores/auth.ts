@@ -7,6 +7,7 @@ export interface AuthState {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  refetchProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthState>({
@@ -14,6 +15,7 @@ export const AuthContext = createContext<AuthState>({
   user: null,
   profile: null,
   loading: true,
+  refetchProfile: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
