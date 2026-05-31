@@ -56,3 +56,4 @@ ALTER TABLE favorite_creators ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "fcr_all"    ON favorite_creators USING (auth.uid() = user_id);
 CREATE POLICY "fcr_insert" ON favorite_creators FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "fcr_delete" ON favorite_creators FOR DELETE USING (auth.uid() = user_id);
+  

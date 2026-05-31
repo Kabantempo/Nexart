@@ -295,6 +295,74 @@ function CreatorProfileSection({ userId }: { userId: string }) {
   );
 }
 
+// ─── Organizer profile section ───────────────────────────────────────────────
+
+function OrganizerProfileSection({ userId }: { userId: string }) {
+  const [orgName, setOrgName]     = useState('');
+  const [website, setWebsite]     = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [loaded, setLoaded]       = useState(false);
+  const [saving, setSaving]       = useState(false);
+  const [editing, setEditing]     = useState(false);
+
+  useEffect(() => {
+    supabase.from('organizer_profiles').select('*').eq('user_id', userId).maybeSingle()
+      .then(({ data }) => {
+        if (data) { setOrgName(data.organization_name ?? ''); setWebsite(data.website ?? ''); setInstagram(data.instagram ?? ''); }
+        else setEditing(true);
+        setLoaded(true);
+      });
+  }, [userId]);
+
+  const handleSave = async () => {
+    if (!orgName.trim()) { Alert.alert('Erreur', "Le nom de l'organisation est requis."); return; }
+    setSaving(true);
+    await supabase.from('organizer_profiles').upsert(
+      { user_id: userId, organization_name: orgName.trim(), website: website.trim() || null, instagram: instagram.trim() || null },
+      { onConflict: 'user_id' },
+    );
+    setSaving(false);
+    setEditing(false);
+  };
+
+  if (!loaded) return <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />;
+
+  if (!editing) return (
+    <View>
+      <Text style={styles.fieldLabel}>Organisation</Text>
+      <Text style={styles.fieldValue}>{orgName || '—'}</Text>
+      {website   && <><Text style={styles.fieldLabel}>Site web</Text><Text style={styles.link}>{website}</Text></>}
+      {instagram && <><Text style={styles.fieldLabel}>Instagram</Text><Text style={styles.link}>@{instagram}</Text></>}
+      <TouchableOpacity style={styles.btnSecondary} onPress={() => setEditing(true)}>
+        <Text style={styles.btnSecondaryText}>Modifier mon profil</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View>
+      {!orgName && (
+        <View style={styles.setupBanner}>
+          <Text style={styles.setupTitle}>Complétez votre profil organisateur</Text>
+          <Text style={styles.setupSubtitle}>Visible par les créateurs qui candidatent à vos marchés.</Text>
+        </View>
+      )}
+      <Text style={styles.fieldLabel}>Nom de l'organisation</Text>
+      <TextInput style={styles.input} value={orgName} onChangeText={setOrgName} placeholder="Ex : Marché des Créateurs de Lyon" placeholderTextColor={colors.text.secondary} />
+      <Text style={styles.fieldLabel}>Site web <Text style={styles.hint}>(optionnel)</Text></Text>
+      <TextInput style={styles.input} value={website} onChangeText={setWebsite} placeholder="https://…" placeholderTextColor={colors.text.secondary} autoCapitalize="none" />
+      <Text style={styles.fieldLabel}>Instagram <Text style={styles.hint}>(sans @)</Text></Text>
+      <TextInput style={styles.input} value={instagram} onChangeText={setInstagram} placeholder="monmarche" placeholderTextColor={colors.text.secondary} autoCapitalize="none" />
+      <View style={styles.formActions}>
+        {orgName !== '' && <TouchableOpacity style={styles.btnCancel} onPress={() => setEditing(false)}><Text style={styles.btnCancelText}>Annuler</Text></TouchableOpacity>}
+        <TouchableOpacity style={[styles.btnSave, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
+          <Text style={styles.btnSaveText}>{saving ? 'Enregistrement…' : 'Enregistrer'}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── Main ProfileScreen ───────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
@@ -348,7 +416,7 @@ export default function ProfileScreen() {
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{profile?.full_name}</Text>
           <Text style={styles.roleLabel}>
-            {profile?.role === 'creator' ? 'Créateur / Artisan' : 'Organisateur'}
+            {profile?.role === 'creator' ? 'Créateur / Artisan' : profile?.role === 'organizer' ? 'Organisateur' : 'Visiteur'}
           </Text>
           {average !== null && (
             <Text style={styles.rating}>{'★'.repeat(Math.round(average))} {average}/5 · {count} avis</Text>
@@ -361,6 +429,8 @@ export default function ProfileScreen() {
 
       {profile?.role === 'creator' && profile?.id ? (
         <CreatorProfileSection userId={profile.id} />
+      ) : profile?.role === 'organizer' && profile?.id ? (
+        <OrganizerProfileSection userId={profile.id} />
       ) : null}
 
       <TouchableOpacity style={styles.btnLogout} onPress={() => supabase.auth.signOut()}>

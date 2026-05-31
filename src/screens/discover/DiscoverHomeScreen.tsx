@@ -106,9 +106,10 @@ export default function DiscoverHomeScreen() {
       {/* Events section */}
       <View style={s.sectionHeader}>
         <Text style={s.sectionTitle}>Prochains marchés</Text>
-        <TouchableOpacity onPress={() => nav.navigate('Marchés')}>
-          <Text style={s.sectionLink}>Voir tout</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: spacing.md }}>
+          <TouchableOpacity onPress={() => nav.navigate('EventMap')}><Text style={s.sectionLink}>🗺 Carte</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => nav.navigate('Marchés')}><Text style={s.sectionLink}>Voir tout</Text></TouchableOpacity>
+        </View>
       </View>
 
       {evLoading ? <ActivityIndicator color={colors.primary} style={{ marginBottom: spacing.xl }} /> : (

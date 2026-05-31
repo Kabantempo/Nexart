@@ -5,10 +5,20 @@ import { AuthContext } from './src/stores/auth';
 import { Profile } from './src/types';
 import RootNavigator from './src/navigation';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
+import OnboardingModal, { useOnboarding } from './src/components/OnboardingModal';
 
 function AppInner({ profile }: { profile: Profile | null }) {
   usePushNotifications(profile?.id);
-  return <RootNavigator />;
+  const { visible, dismiss } = useOnboarding(profile?.role);
+
+  return (
+    <>
+      <RootNavigator />
+      {profile?.role && visible && (
+        <OnboardingModal role={profile.role} visible={visible} onDismiss={dismiss} />
+      )}
+    </>
+  );
 }
 
 export default function App() {
