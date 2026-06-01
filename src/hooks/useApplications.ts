@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Application, ApplicationStatus } from '../types';
+import { getPushTokenForUser, sendPushNotification } from './usePushNotifications';
 
 interface ApplicationWithEvent extends Application {
   event: { id: string; title: string; city: string | null; start_date: string; end_date: string | null; cover_image: string | null; organizer_id: string };
@@ -8,6 +9,7 @@ interface ApplicationWithEvent extends Application {
 
 interface ApplicationWithCreator extends Application {
   creator: { id: string; full_name: string; avatar_url: string | null };
+  event:   { id: string; title: string };
 }
 
 export function useCreatorApplications(creatorId: string | undefined) {
@@ -44,7 +46,7 @@ export function useOrganizerApplications(eventId?: string) {
     setLoading(true);
     let query = supabase
       .from('applications')
-      .select('*, creator:profiles(id, full_name, avatar_url)')
+      .select('*, creator:profiles(id, full_name, avatar_url), event:events(id, title)')
       .order('created_at', { ascending: false });
 
     if (eventId) query = query.eq('event_id', eventId);
@@ -62,7 +64,22 @@ export function useOrganizerApplications(eventId?: string) {
       .from('applications')
       .update({ status })
       .eq('id', applicationId);
-    if (!err) await fetch();
+
+    if (!err) {
+      await fetch();
+      const app = applications.find(a => a.id === applicationId);
+      if (app?.creator?.id) {
+        getPushTokenForUser(app.creator.id).then(token => {
+          if (!token) return;
+          const eventTitle = app.event?.title ?? 'un marché';
+          if (status === 'accepted') {
+            sendPushNotification(token, '🎉 Candidature acceptée !', `Votre candidature pour « ${eventTitle} » a été acceptée.`);
+          } else if (status === 'refused') {
+            sendPushNotification(token, 'Candidature non retenue', `Votre candidature pour « ${eventTitle} » n'a pas été retenue.`);
+          }
+        });
+      }
+    }
     return err;
   };
 
@@ -80,6 +97,23 @@ export function useApply(eventId: string, creatorId: string | undefined) {
       creator_id: creatorId,
       message: message ?? null,
     });
+
+    if (!error) {
+      supabase
+        .from('events')
+        .select('title, organizer_id, profiles:organizer_id(full_name)')
+        .eq('id', eventId)
+        .single()
+        .then(({ data }) => {
+          if (!data?.organizer_id) return;
+          getPushTokenForUser(data.organizer_id).then(token => {
+            if (!token) return;
+            const creatorName = (data as any).profiles?.full_name ?? 'Un créateur';
+            sendPushNotification(token, '📩 Nouvelle candidature', `${creatorName} a candidaté pour « ${data.title} ».`);
+          });
+        });
+    }
+
     setLoading(false);
     return { error: error?.message ?? null };
   };
