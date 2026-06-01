@@ -40,11 +40,8 @@ export function MarketCard({
   const onPressIn  = () => Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, friction: 8 }).start();
   const onPressOut = () => Animated.spring(scale, { toValue: 1,    useNativeDriver: true, friction: 8 }).start();
 
-  const priceStr = price == null
-    ? null
-    : price === 0
-      ? 'Gratuit'
-      : `${price} €`;
+  const isFree   = price === 0;
+  const priceStr = price == null ? null : isFree ? 'Entrée libre' : `${price} €`;
 
   return (
     <Animated.View style={{ transform: [{ scale }], width: CARD_W }}>
@@ -92,14 +89,22 @@ export function MarketCard({
           {/* Prix */}
           {priceStr && (
             <View style={s.priceRow}>
-              <Text style={s.price}>{priceStr}</Text>
-              {originalPrice != null && originalPrice > (price ?? 0) && (
-                <Text style={s.originalPrice}>{originalPrice} €</Text>
+              {isFree ? (
+                <View style={s.freeBadge}>
+                  <Text style={s.freeText}>Entrée libre</Text>
+                </View>
+              ) : (
+                <>
+                  <Text style={s.price}>{priceStr}</Text>
+                  {originalPrice != null && originalPrice > (price ?? 0) && (
+                    <Text style={s.originalPrice}>{originalPrice} €</Text>
+                  )}
+                </>
               )}
             </View>
           )}
-          {priceStr && (
-            <Text style={s.priceLabel}>/ stand</Text>
+          {priceStr && !isFree && (
+            <Text style={s.priceLabel}>/ place</Text>
           )}
         </View>
       </TouchableOpacity>
@@ -158,4 +163,6 @@ const s = StyleSheet.create({
   price:         { ...typography.h3, color: colors.text.primary, fontWeight: '700', fontSize: 16 },
   originalPrice: { ...typography.caption, color: colors.text.secondary, textDecorationLine: 'line-through' },
   priceLabel:    { ...typography.caption, color: colors.text.secondary, fontSize: 10 },
+  freeBadge:     { backgroundColor: colors.success + '18', borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 3 },
+  freeText:      { color: colors.success, fontSize: 11, fontWeight: '700' },
 });
