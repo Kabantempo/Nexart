@@ -63,7 +63,7 @@ function SectionTitle({ icon, title, count, onSeeAll }: {
 
 // ─── Horizontal event row ─────────────────────────────────
 
-function EventRow({ events, onPressEvent }: { events: any[]; onPressEvent: (id: string) => void }) {
+function EventRow({ events, onPressEvent, isCreator = false }: { events: any[]; onPressEvent: (id: string) => void; isCreator?: boolean }) {
   const { width: W } = useWindowDimensions();
   const cardWidth = Math.min(W * 0.60, 220);
   if (!events.length) return null;
@@ -78,7 +78,10 @@ function EventRow({ events, onPressEvent }: { events: any[]; onPressEvent: (id: 
       contentContainerStyle={s.hRow}
       ItemSeparatorComponent={() => <View style={{ width: spacing.md }} />}
       renderItem={({ item }) => (
-        <MarketCard {...eventToMarketCard(item, () => onPressEvent(item.id))} />
+        <MarketCard
+          {...eventToMarketCard(item, () => onPressEvent(item.id))}
+          variant={isCreator ? 'creator' : 'visitor'}
+        />
       )}
     />
   );
@@ -156,7 +159,7 @@ export default function FeedScreen() {
           {ongoing.length > 0 && (
             <View style={s.section}>
               <SectionTitle icon="radio-button-on" title="En cours" count={ongoing.length} />
-              <EventRow events={ongoing} onPressEvent={goEvent} />
+              <EventRow events={ongoing} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
           )}
 
@@ -164,7 +167,7 @@ export default function FeedScreen() {
           {soon.length > 0 && (
             <View style={s.section}>
               <SectionTitle icon="time-outline" title="Cette semaine" count={soon.length} />
-              <EventRow events={soon} onPressEvent={goEvent} />
+              <EventRow events={soon} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
           )}
 
@@ -177,7 +180,7 @@ export default function FeedScreen() {
                 count={upcoming.length}
                 onSeeAll={() => nav.navigate('Marchés')}
               />
-              <EventRow events={upcoming} onPressEvent={goEvent} />
+              <EventRow events={upcoming} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
           )}
 

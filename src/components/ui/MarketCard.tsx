@@ -12,11 +12,12 @@ export interface MarketCardProps {
   id:                string;
   imageUrl?:         string | null;
   title:             string;
-  subtitle:          string;       // ville · type
-  rating?:           number;       // 0–5
-  price?:            number | null; // prix du stand
-  originalPrice?:    number;        // prix barré (optionnel)
-  discountLabel?:    string;        // ex: "Gratuit" ou "-20%"
+  subtitle:          string;
+  rating?:           number;
+  price?:            number | null;
+  originalPrice?:    number;
+  discountLabel?:    string;
+  variant?:          'visitor' | 'creator'; // 'visitor' par défaut
   onPress?:          () => void;
 }
 
@@ -29,7 +30,7 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 
 export function MarketCard({
   imageUrl, title, subtitle, rating, price,
-  originalPrice, discountLabel, onPress,
+  originalPrice, discountLabel, variant = 'visitor', onPress,
 }: MarketCardProps) {
   const { width: W } = useWindowDimensions();
   const CARD_W    = Math.min(W * 0.60, 220);
@@ -40,8 +41,13 @@ export function MarketCard({
   const onPressIn  = () => Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, friction: 8 }).start();
   const onPressOut = () => Animated.spring(scale, { toValue: 1,    useNativeDriver: true, friction: 8 }).start();
 
-  const isFree   = price === 0;
-  const priceStr = price == null ? null : isFree ? 'Entrée libre' : `${price} €`;
+  const isCreator = variant === 'creator';
+  const isFree    = price === 0;
+  const priceStr  = price == null
+    ? null
+    : isFree && !isCreator
+      ? 'Entrée libre'
+      : `${price} €`;
 
   return (
     <Animated.View style={{ transform: [{ scale }], width: CARD_W }}>
@@ -89,7 +95,7 @@ export function MarketCard({
           {/* Prix */}
           {priceStr && (
             <View style={s.priceRow}>
-              {isFree ? (
+              {isFree && !isCreator ? (
                 <View style={s.freeBadge}>
                   <Text style={s.freeText}>Entrée libre</Text>
                 </View>
@@ -103,8 +109,10 @@ export function MarketCard({
               )}
             </View>
           )}
-          {priceStr && !isFree && (
-            <Text style={s.priceLabel}>/ place</Text>
+          {priceStr && !(isFree && !isCreator) && (
+            <Text style={s.priceLabel}>
+              {isCreator ? '/ place pour un stand' : '/ entrée'}
+            </Text>
           )}
         </View>
       </TouchableOpacity>
