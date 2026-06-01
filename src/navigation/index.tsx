@@ -3,6 +3,7 @@ import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../stores/auth';
 import { colors } from '../constants/theme';
+import linking from './linking';
 
 import AuthNavigator      from './AuthNavigator';
 import CreatorNavigator   from './CreatorNavigator';
@@ -21,18 +22,21 @@ export default function RootNavigator() {
   const isAuthenticated = !!session || !!profile;
 
   return (
-    <NavigationContainer theme={{
-      ...DarkTheme,
-      colors: {
-        ...DarkTheme.colors,
-        background:   colors.background,
-        card:         colors.surface,
-        text:         colors.text.primary,
-        border:       colors.border,
-        primary:      colors.primary,
-        notification: colors.primary,
-      },
-    }}>
+    <NavigationContainer
+      linking={linking}
+      theme={{
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          background:   colors.background,
+          card:         colors.surface,
+          text:         colors.text.primary,
+          border:       colors.border,
+          primary:      colors.primary,
+          notification: colors.primary,
+        },
+      }}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <>
