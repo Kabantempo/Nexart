@@ -1,20 +1,21 @@
 export const colors = {
-  background:   '#0f172a',   // --background dark
-  surface:      '#1e293b',   // --card dark
-  surfaceLight: '#F5F3EF',
+  background: '#f8fafc',   // --background
+  surface:    '#ffffff',   // --card
+  muted:      '#f3f4f6',   // --muted  (fond subtil)
 
-  primary:   '#818cf8',      // --primary dark  (indigo-400)
-  secondary: '#6366f1',      // indigo-500
+  primary:    '#6366f1',   // --primary  (indigo-500)
+  secondary:  '#4f46e5',   // --chart-2  (indigo-600, pour actions secondaires)
+  accent:     '#e0e7ff',   // --accent   (indigo très clair)
 
   text: {
-    primary:   '#e2e8f0',    // --foreground dark
-    secondary: '#9ca3af',    // --muted-foreground dark
-    inverse:   '#0f172a',    // --primary-foreground dark
+    primary:   '#1e293b',  // --foreground
+    secondary: '#6b7280',  // --muted-foreground
+    inverse:   '#ffffff',  // --primary-foreground
   },
 
-  border:  '#4b5563',        // --border dark
-  error:   '#ef4444',        // --destructive
-  success: '#10b981',        // kept for success states
+  border:  '#d1d5db',      // --border
+  error:   '#ef4444',      // --destructive
+  success: '#10b981',
 } as const;
 
 export const spacing = {

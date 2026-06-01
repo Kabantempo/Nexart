@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../stores/auth';
 import { colors } from '../constants/theme';
@@ -25,9 +25,9 @@ export default function RootNavigator() {
     <NavigationContainer
       linking={linking}
       theme={{
-        ...DarkTheme,
+        ...DefaultTheme,
         colors: {
-          ...DarkTheme.colors,
+          ...DefaultTheme.colors,
           background:   colors.background,
           card:         colors.surface,
           text:         colors.text.primary,
