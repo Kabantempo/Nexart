@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Event } from '../types';
+import { DEMO_MODE, DEMO_EVENTS } from '../lib/demoData';
 
 interface UseEventsOptions {
   limit?: number;
@@ -38,7 +39,17 @@ export function useEvents(options: UseEventsOptions = {}) {
 
     const { data, error: err } = await query;
     if (err) setError(err.message);
-    else setEvents(data ?? []);
+    else {
+      const real = data ?? [];
+      if (DEMO_MODE && real.length === 0) {
+        const demo = organizerId
+          ? DEMO_EVENTS.filter(e => e.organizer_id === organizerId)
+          : DEMO_EVENTS;
+        setEvents(demo.slice(0, limit) as unknown as Event[]);
+      } else {
+        setEvents(real);
+      }
+    }
     setLoading(false);
   }, [limit, region, disciplineTags, organizerId]);
 

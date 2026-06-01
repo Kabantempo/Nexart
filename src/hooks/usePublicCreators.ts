@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { PublicCreatorProfile } from '../types';
+import { DEMO_MODE, DEMO_CREATORS } from '../lib/demoData';
 
 export function usePublicCreators(opts: { discipline?: string; city?: string; limit?: number } = {}) {
   const [creators, setCreators] = useState<PublicCreatorProfile[]>([]);
@@ -41,7 +42,14 @@ export function usePublicCreators(opts: { discipline?: string; city?: string; li
     if (opts.discipline) result = result.filter(c => c.disciplines.includes(opts.discipline!));
     if (opts.city)       result = result.filter(c => c.city?.toLowerCase().includes(opts.city!.toLowerCase()));
 
-    setCreators(result);
+    if (DEMO_MODE && result.length === 0) {
+      let demo = DEMO_CREATORS as unknown as PublicCreatorProfile[];
+      if (opts.discipline) demo = demo.filter(c => c.disciplines.includes(opts.discipline!));
+      if (opts.city)       demo = demo.filter(c => c.city?.toLowerCase().includes(opts.city!.toLowerCase()));
+      setCreators(demo.slice(0, opts.limit ?? 40));
+    } else {
+      setCreators(result);
+    }
     setLoading(false);
   }, [opts.discipline, opts.city, opts.limit]);
 

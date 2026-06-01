@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { DEMO_MODE, DEMO_POSTS } from '../lib/demoData';
 
 export type PostType = 'guest_appearance' | 'call_for_collab' | 'tip' | 'experience' | 'general';
 
@@ -39,7 +40,14 @@ export function usePosts(opts: { creatorId?: string; hashtag?: string; limit?: n
     if (opts.hashtag)   query = query.contains('hashtags', [opts.hashtag.toLowerCase()]);
 
     const { data } = await query;
-    setPosts((data as Post[]) ?? []);
+    const real = (data as Post[]) ?? [];
+    if (DEMO_MODE && real.length === 0) {
+      let demo = DEMO_POSTS as unknown as Post[];
+      if (opts.creatorId) demo = demo.filter(p => p.creator_id === opts.creatorId);
+      setPosts(demo.slice(0, opts.limit ?? 30));
+    } else {
+      setPosts(real);
+    }
     setLoading(false);
   }, [opts.creatorId, opts.hashtag, opts.limit]);
 

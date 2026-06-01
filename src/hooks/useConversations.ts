@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { DEMO_MODE, DEMO_CONVERSATIONS } from '../lib/demoData';
 
 export interface ConversationSummary {
   id: string;
@@ -33,7 +34,11 @@ export function useConversations(userId: string | undefined) {
       .or(`creator_id.eq.${userId},organizer_id.eq.${userId}`)
       .order('created_at', { ascending: false });
 
-    if (!convs?.length) { setConversations([]); setLoading(false); return; }
+    if (!convs?.length) {
+      if (DEMO_MODE) setConversations(DEMO_CONVERSATIONS as unknown as ConversationSummary[]);
+      else setConversations([]);
+      setLoading(false); return;
+    }
 
     // Fetch last message per conversation
     const ids = convs.map(c => c.id);

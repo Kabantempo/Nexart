@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Application, ApplicationStatus } from '../types';
 import { getPushTokenForUser, sendPushNotification } from './usePushNotifications';
+import { DEMO_MODE, DEMO_APPLICATIONS } from '../lib/demoData';
 
 interface ApplicationWithEvent extends Application {
   event: { id: string; title: string; city: string | null; start_date: string; end_date: string | null; cover_image: string | null; organizer_id: string };
@@ -28,7 +29,11 @@ export function useCreatorApplications(creatorId: string | undefined) {
       .limit(20);
 
     if (err) setError(err.message);
-    else setApplications((data as ApplicationWithEvent[]) ?? []);
+    else {
+      const real = (data as ApplicationWithEvent[]) ?? [];
+      if (DEMO_MODE && real.length === 0) setApplications(DEMO_APPLICATIONS as unknown as ApplicationWithEvent[]);
+      else setApplications(real);
+    }
     setLoading(false);
   }, [creatorId]);
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Message } from '../types';
 import { getPushTokenForUser, sendPushNotification } from './usePushNotifications';
+import { DEMO_MODE, DEMO_MESSAGES } from '../lib/demoData';
 
 export function useMessages(conversationId: string | undefined, currentUserId: string | undefined) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -16,7 +17,12 @@ export function useMessages(conversationId: string | undefined, currentUserId: s
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
-    setMessages((data as Message[]) ?? []);
+    const real = (data as Message[]) ?? [];
+    if (DEMO_MODE && real.length === 0 && DEMO_MESSAGES[conversationId]) {
+      setMessages(DEMO_MESSAGES[conversationId] as Message[]);
+    } else {
+      setMessages(real);
+    }
     setLoading(false);
   }, [conversationId]);
 
