@@ -42,9 +42,9 @@ function eventToMarketCard(event: any, onPress: () => void) {
 
 // ─── Section header ───────────────────────────────────────
 
-function SectionTitle({ icon, title, count, onSeeAll }: {
+function SectionTitle({ icon, title, count, onSeeAll, onMap }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
-  title: string; count?: number; onSeeAll?: () => void;
+  title: string; count?: number; onSeeAll?: () => void; onMap?: () => void;
 }) {
   return (
     <View style={s.sectionHead}>
@@ -53,11 +53,19 @@ function SectionTitle({ icon, title, count, onSeeAll }: {
       {count !== undefined && count > 0 && (
         <View style={s.countBadge}><Text style={s.countText}>{count}</Text></View>
       )}
-      {onSeeAll && (
-        <TouchableOpacity onPress={onSeeAll} style={s.seeAll}>
-          <Text style={s.seeAllText}>Voir tout</Text>
-        </TouchableOpacity>
-      )}
+      <View style={s.sectionActions}>
+        {onMap && (
+          <TouchableOpacity onPress={onMap} style={s.mapBtn}>
+            <Ionicons name="map-outline" size={13} color={colors.primary} />
+            <Text style={s.mapBtnText}>Carte</Text>
+          </TouchableOpacity>
+        )}
+        {onSeeAll && (
+          <TouchableOpacity onPress={onSeeAll} style={s.seeAll}>
+            <Text style={s.seeAllText}>Voir tout</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 }
@@ -159,7 +167,10 @@ export default function FeedScreen() {
           {/* ── En cours ── */}
           {ongoing.length > 0 && (
             <View style={s.section}>
-              <SectionTitle icon="radio-button-on" title="En cours" count={ongoing.length} />
+              <SectionTitle
+                icon="radio-button-on" title="En cours" count={ongoing.length}
+                onMap={() => nav.navigate('Découvrir', { screen: 'EventMap' })}
+              />
               <EventRow events={ongoing} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
           )}
@@ -167,7 +178,10 @@ export default function FeedScreen() {
           {/* ── Cette semaine ── */}
           {soon.length > 0 && (
             <View style={s.section}>
-              <SectionTitle icon="time-outline" title="Cette semaine" count={soon.length} />
+              <SectionTitle
+                icon="time-outline" title="Cette semaine" count={soon.length}
+                onMap={() => nav.navigate('Découvrir', { screen: 'EventMap' })}
+              />
               <EventRow events={soon} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
           )}
@@ -176,10 +190,9 @@ export default function FeedScreen() {
           {upcoming.length > 0 && (
             <View style={s.section}>
               <SectionTitle
-                icon="calendar-outline"
-                title="À venir"
-                count={upcoming.length}
+                icon="calendar-outline" title="À venir" count={upcoming.length}
                 onSeeAll={() => nav.navigate('Marchés')}
+                onMap={() => nav.navigate('Découvrir', { screen: 'EventMap' })}
               />
               <EventRow events={upcoming} onPressEvent={goEvent} isCreator={isCreator} />
             </View>
@@ -273,8 +286,11 @@ const s = StyleSheet.create({
   sectionTitle: { ...typography.label, color: colors.text.primary, fontWeight: '700', flex: 1 },
   countBadge:   { backgroundColor: colors.primary + '18', borderRadius: radius.full, paddingHorizontal: 7, paddingVertical: 2 },
   countText:    { ...typography.caption, color: colors.primary, fontWeight: '700', fontSize: 11 },
+  sectionActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  mapBtn:       { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.accent, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 4 },
+  mapBtnText:   { ...typography.caption, color: colors.primary, fontWeight: '600', fontSize: 11 },
   seeAll:       { paddingHorizontal: spacing.xs },
-  seeAllText:   { ...typography.caption, color: colors.primary, fontWeight: '600' },
+  seeAllText:   { ...typography.caption, color: colors.text.secondary, fontWeight: '500' },
 
   hRow: { paddingHorizontal: spacing.xl },
 
