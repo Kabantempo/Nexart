@@ -6,48 +6,93 @@ import { useCreatorApplications } from '../../hooks/useApplications';
 import { useCreatorProfile } from '../../hooks/useCreatorProfile';
 import { useEventRecommendations } from '../../hooks/useRecommendations';
 import { colors, spacing, typography, radius } from '../../constants/theme';
-import { Event, Application } from '../../types';
+import { Event } from '../../types';
 
-const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending:  { label: 'En attente', color: colors.text.secondary },
-  accepted: { label: 'Acceptée',   color: colors.secondary },
-  refused:  { label: 'Refusée',    color: colors.error },
+const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
+  pending:  { label: 'En attente', bg: colors.text.secondary + '18', color: colors.text.secondary },
+  accepted: { label: 'Acceptée',   bg: colors.secondary + '20',      color: colors.secondary },
+  refused:  { label: 'Refusée',    bg: colors.error + '18',          color: colors.error },
 };
 
+const EVENT_TYPE_ACCENT: Record<string, string> = {
+  permanent: '#3B82F6',
+  seasonal:  '#F59E0B',
+  popup:     '#A855F7',
+  salon:     '#10B981',
+  fair:      '#EF4444',
+};
+
+// ─── EventCard ────────────────────────────────────────────
+
 function EventCard({ event }: { event: Event }) {
+  const accent = EVENT_TYPE_ACCENT[event.event_type] ?? colors.primary;
   return (
-    <View style={styles.eventCard}>
-      <View style={styles.eventDateBadge}>
-        <Text style={styles.eventDateDay}>
+    <View style={[s.eventCard, { borderLeftColor: accent }]}>
+      <View style={[s.eventDateBadge, { backgroundColor: accent + '18' }]}>
+        <Text style={[s.eventDateDay, { color: accent }]}>
           {new Date(event.start_date).toLocaleDateString('fr-FR', { day: '2-digit' })}
         </Text>
-        <Text style={styles.eventDateMonth}>
+        <Text style={[s.eventDateMonth, { color: accent }]}>
           {new Date(event.start_date).toLocaleDateString('fr-FR', { month: 'short' })}
         </Text>
       </View>
-      <View style={styles.eventInfo}>
-        <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
-        <Text style={styles.eventCity} numberOfLines={1}>{event.city ?? '—'}</Text>
+      <View style={s.eventInfo}>
+        <Text style={s.eventTitle} numberOfLines={1}>{event.title}</Text>
+        <Text style={s.eventCity} numberOfLines={1}>{event.city ?? '—'}</Text>
         {event.stand_price != null && (
-          <Text style={styles.eventPrice}>{event.stand_price === 0 ? 'Gratuit' : `${event.stand_price} €`}</Text>
+          <Text style={s.eventPrice}>
+            {event.stand_price === 0 ? 'Gratuit' : `Stand ${event.stand_price} €`}
+          </Text>
         )}
+      </View>
+      <View style={[s.eventArrow, { backgroundColor: accent + '15' }]}>
+        <Text style={[s.eventArrowText, { color: accent }]}>›</Text>
       </View>
     </View>
   );
 }
 
+// ─── ApplicationItem ──────────────────────────────────────
+
 function ApplicationItem({ application }: { application: any }) {
-  const s = STATUS_LABEL[application.status] ?? STATUS_LABEL.pending;
+  const cfg = STATUS_CONFIG[application.status] ?? STATUS_CONFIG.pending;
   return (
-    <View style={styles.appItem}>
+    <View style={s.appItem}>
+      <View style={s.appDot} />
       <View style={{ flex: 1 }}>
-        <Text style={styles.appTitle} numberOfLines={1}>{application.event?.title ?? '—'}</Text>
-        <Text style={styles.appCity}>{application.event?.city ?? ''}</Text>
+        <Text style={s.appTitle} numberOfLines={1}>{application.event?.title ?? '—'}</Text>
+        <Text style={s.appCity}>{application.event?.city ?? ''}</Text>
       </View>
-      <Text style={[styles.appStatus, { color: s.color }]}>{s.label}</Text>
+      <View style={[s.statusPill, { backgroundColor: cfg.bg }]}>
+        <Text style={[s.statusText, { color: cfg.color }]}>{cfg.label}</Text>
+      </View>
     </View>
   );
 }
+
+// ─── EmptyState ───────────────────────────────────────────
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <View style={s.emptyState}>
+      <View style={s.emptyDot} />
+      <Text style={s.emptyText}>{message}</Text>
+    </View>
+  );
+}
+
+// ─── SectionTitle ─────────────────────────────────────────
+
+function SectionTitle({ children, accent }: { children: string; accent?: boolean }) {
+  return (
+    <View style={s.sectionHeader}>
+      {accent && <View style={s.sectionAccent} />}
+      <Text style={s.sectionTitle}>{children}</Text>
+    </View>
+  );
+}
+
+// ─── Main screen ──────────────────────────────────────────
 
 export default function CreatorHomeScreen() {
   const { profile } = useAuth();
@@ -56,89 +101,170 @@ export default function CreatorHomeScreen() {
   const { applications, loading: appLoading } = useCreatorApplications(profile?.id);
   const { events: recommended, loading: recLoading } = useEventRecommendations(creatorProfile, 3);
 
-  const pendingCount = applications.filter(a => a.status === 'pending').length;
+  const pendingCount  = applications.filter(a => a.status === 'pending').length;
   const acceptedCount = applications.filter(a => a.status === 'accepted').length;
+  const firstName     = profile?.full_name?.split(' ')[0] ?? 'artisan';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.greeting}>Bonjour, {profile?.full_name?.split(' ')[0] ?? 'artisan'}</Text>
-      <Text style={styles.subtitle}>Trouvez vos prochains marchés</Text>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
 
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNum}>{pendingCount}</Text>
-          <Text style={styles.statLabel}>En attente</Text>
+      {/* Greeting */}
+      <View style={s.greetingWrap}>
+        <Text style={s.greeting}>Bonjour, {firstName}</Text>
+        <Text style={s.subtitle}>Trouvez vos prochains marchés</Text>
+      </View>
+
+      {/* Stats */}
+      <View style={s.statsRow}>
+        <View style={[s.statCard, s.statCardPending]}>
+          <Text style={s.statNum}>{pendingCount}</Text>
+          <Text style={s.statLabel}>En attente</Text>
         </View>
-        <View style={[styles.statCard, styles.statCardAlt]}>
-          <Text style={[styles.statNum, { color: colors.secondary }]}>{acceptedCount}</Text>
-          <Text style={styles.statLabel}>Acceptées</Text>
+        <View style={[s.statCard, s.statCardAccepted]}>
+          <Text style={[s.statNum, { color: colors.secondary }]}>{acceptedCount}</Text>
+          <Text style={s.statLabel}>Acceptées</Text>
         </View>
       </View>
 
-      {recommended.length > 0 && (
+      {/* Recommandés */}
+      {!recLoading && recommended.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>✨ Recommandés pour vous</Text>
+          <SectionTitle accent>Pour vous</SectionTitle>
           {recommended.map(e => <EventCard key={e.id} event={e} />)}
+          <View style={s.spacer} />
         </>
       )}
 
-      <Text style={styles.sectionTitle}>Prochains marchés</Text>
+      {/* Prochains marchés */}
+      <SectionTitle>Prochains marchés</SectionTitle>
       {evLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />
+        <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.lg }} />
       ) : events.length === 0 ? (
-        <Text style={styles.empty}>Aucun marché disponible pour l'instant</Text>
+        <EmptyState message="Aucun marché disponible pour l'instant" />
       ) : (
         events.map(e => <EventCard key={e.id} event={e} />)
       )}
 
-      <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Mes candidatures</Text>
+      <View style={s.spacer} />
+
+      {/* Candidatures */}
+      <SectionTitle>Mes candidatures</SectionTitle>
       {appLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.md }} />
+        <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.lg }} />
       ) : applications.length === 0 ? (
-        <Text style={styles.empty}>Aucune candidature pour l'instant</Text>
+        <EmptyState message="Candidatez à vos premiers marchés !" />
       ) : (
         applications.slice(0, 5).map(a => <ApplicationItem key={a.id} application={a} />)
       )}
+
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+// ─── Styles ───────────────────────────────────────────────
+
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.xl, paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
-  greeting: { ...typography.h2, color: colors.text.primary, marginBottom: spacing.xs },
-  subtitle: { ...typography.body, color: colors.text.secondary, marginBottom: spacing.xl },
+  content:   { padding: spacing.xl, paddingTop: spacing.xxl + 8, paddingBottom: spacing.xxl },
+
+  // Greeting
+  greetingWrap: { marginBottom: spacing.xl },
+  greeting:     { ...typography.h2, color: colors.text.primary, fontWeight: '700', marginBottom: spacing.xs },
+  subtitle:     { ...typography.body, color: colors.text.secondary },
+
+  // Stats
   statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
   statCard: {
-    flex: 1, backgroundColor: colors.surface, borderRadius: radius.md,
-    padding: spacing.md, alignItems: 'center', borderWidth: 1, borderColor: colors.border,
+    flex: 1, borderRadius: radius.xl,
+    padding: spacing.lg, alignItems: 'center',
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  statCardAlt: { borderColor: colors.secondary + '40' },
-  statNum: { ...typography.h1, color: colors.primary },
-  statLabel: { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
-  sectionTitle: { ...typography.h3, color: colors.text.primary, marginBottom: spacing.md },
+  statCardPending: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    shadowColor: colors.text.secondary,
+  },
+  statCardAccepted: {
+    backgroundColor: colors.secondary + '10',
+    borderColor: colors.secondary + '30',
+    shadowColor: colors.secondary,
+  },
+  statNum:   { ...typography.h1, fontSize: 32, fontWeight: '700', marginBottom: 2 },
+  statLabel: { ...typography.caption, color: colors.text.secondary },
+
+  // Section header
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  sectionAccent: { width: 3, height: 16, borderRadius: 2, backgroundColor: colors.primary },
+  sectionTitle:  { ...typography.h3, color: colors.text.primary, fontWeight: '600' },
+
+  spacer: { height: spacing.xl },
+
+  // Event card
   eventCard: {
-    flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.md,
-    padding: spacing.md, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border,
-    alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    borderWidth: 1, borderColor: colors.border,
+    borderLeftWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 1,
   },
   eventDateBadge: {
-    width: 44, alignItems: 'center', marginRight: spacing.md,
-    backgroundColor: colors.primary + '20', borderRadius: radius.sm, padding: spacing.xs,
+    width: 44, alignItems: 'center',
+    marginRight: spacing.md,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xs,
   },
-  eventDateDay: { ...typography.h3, color: colors.primary, lineHeight: 20 },
-  eventDateMonth: { ...typography.caption, color: colors.primary, textTransform: 'uppercase' },
-  eventInfo: { flex: 1 },
-  eventTitle: { ...typography.label, color: colors.text.primary, fontWeight: '600', marginBottom: 2 },
-  eventCity: { ...typography.caption, color: colors.text.secondary },
-  eventPrice: { ...typography.caption, color: colors.primary, marginTop: 2 },
+  eventDateDay:   { ...typography.h3, fontWeight: '700', lineHeight: 22 },
+  eventDateMonth: { ...typography.caption, textTransform: 'uppercase', fontSize: 10 },
+  eventInfo:      { flex: 1 },
+  eventTitle:     { ...typography.label, color: colors.text.primary, fontWeight: '600', marginBottom: 3 },
+  eventCity:      { ...typography.caption, color: colors.text.secondary },
+  eventPrice:     { ...typography.caption, color: colors.primary, marginTop: 2, fontWeight: '600' },
+  eventArrow: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', marginLeft: spacing.sm,
+  },
+  eventArrowText: { fontSize: 18, fontWeight: '300', marginTop: -1 },
+
+  // Application item
   appItem: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface,
-    borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.sm,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1, borderColor: colors.border,
+    gap: spacing.sm,
   },
-  appTitle: { ...typography.label, color: colors.text.primary, fontWeight: '600' },
-  appCity: { ...typography.caption, color: colors.text.secondary },
-  appStatus: { ...typography.caption, fontWeight: '600' },
-  empty: { ...typography.body, color: colors.text.secondary, fontStyle: 'italic' },
+  appDot:  { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+  appTitle: { ...typography.label, color: colors.text.primary, fontWeight: '600', marginBottom: 2 },
+  appCity:  { ...typography.caption, color: colors.text.secondary },
+  statusPill: {
+    paddingHorizontal: spacing.sm, paddingVertical: 4,
+    borderRadius: radius.full,
+  },
+  statusText: { ...typography.caption, fontWeight: '700', fontSize: 11 },
+
+  // Empty state
+  emptyState: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    borderWidth: 1, borderColor: colors.border,
+    borderStyle: 'dashed',
+    marginBottom: spacing.sm,
+  },
+  emptyDot:  { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.text.secondary + '40' },
+  emptyText: { ...typography.body, color: colors.text.secondary, fontStyle: 'italic' },
 });
