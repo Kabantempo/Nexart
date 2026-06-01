@@ -11,10 +11,10 @@ import { useEvents } from '../../hooks/useEvents';
 import { usePublicCreators } from '../../hooks/usePublicCreators';
 import { usePosts } from '../../hooks/usePosts';
 import { useFollowedCreators } from '../../hooks/useFollow';
-import PostCard from '../../components/PostCard';
 import { AppHeader } from '../../components/ui/AppHeader';
 import { MarketCard } from '../../components/ui/MarketCard';
 import { CreatorCard } from '../../components/ui/CreatorCard';
+import { CreationCard } from '../../components/ui/CreationCard';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 const today     = new Date();
@@ -216,11 +216,25 @@ export default function FeedScreen() {
             </View>
           )}
 
-          {/* ── Posts des créateurs suivis ── */}
+          {/* ── Nouvelles créations ── */}
           {posts.length > 0 && (
             <View style={s.section}>
-              <SectionTitle icon="newspaper-outline" title="Actualités" />
-              {posts.map(post => <PostCard key={post.id} post={post} />)}
+              <SectionTitle
+                icon="color-palette-outline"
+                title="Nouvelles créations"
+                onSeeAll={() => nav.navigate('Découvrir', { screen: 'CreatorsList', params: {} })}
+              />
+              <FlatList
+                horizontal
+                data={posts}
+                keyExtractor={p => p.id}
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={Math.min(200, 200) + spacing.md}
+                decelerationRate="fast"
+                contentContainerStyle={s.hRow}
+                ItemSeparatorComponent={() => <View style={{ width: spacing.md }} />}
+                renderItem={({ item }) => <CreationCard post={item} />}
+              />
             </View>
           )}
 
