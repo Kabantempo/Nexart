@@ -1,17 +1,5 @@
-'use client';
-
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withDelay,
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -19,130 +7,82 @@ interface BlobConfig {
   x: number;
   y: number;
   size: number;
-  color: [string, string];
+  color: string;
   duration: number;
   delay: number;
-  scaleFrom: number;
-  scaleTo: number;
+  fromScale: number;
+  toScale: number;
 }
 
 const BLOBS: BlobConfig[] = [
-  {
-    x: -W * 0.2,
-    y: -H * 0.1,
-    size: W * 0.85,
-    color: ['#818cf8', '#6366f1'],
-    duration: 6000,
-    delay: 0,
-    scaleFrom: 0.9,
-    scaleTo: 1.15,
-  },
-  {
-    x: W * 0.35,
-    y: H * 0.45,
-    size: W * 0.7,
-    color: ['#a5b4fc', '#818cf8'],
-    duration: 7500,
-    delay: 800,
-    scaleFrom: 1.0,
-    scaleTo: 1.2,
-  },
-  {
-    x: -W * 0.1,
-    y: H * 0.55,
-    size: W * 0.6,
-    color: ['#c7d2fe', '#a5b4fc'],
-    duration: 9000,
-    delay: 1600,
-    scaleFrom: 0.85,
-    scaleTo: 1.1,
-  },
-  {
-    x: W * 0.5,
-    y: -H * 0.05,
-    size: W * 0.55,
-    color: ['#e0e7ff', '#c7d2fe'],
-    duration: 5500,
-    delay: 400,
-    scaleFrom: 1.05,
-    scaleTo: 0.85,
-  },
+  { x: -W * 0.2, y: -H * 0.08, size: W * 0.85, color: '#c7d2fe', duration: 6000, delay: 0,    fromScale: 0.9,  toScale: 1.15 },
+  { x: W * 0.35, y: H * 0.42,  size: W * 0.70, color: '#a5b4fc', duration: 7500, delay: 700,  fromScale: 1.0,  toScale: 1.2  },
+  { x: -W * 0.1, y: H * 0.55,  size: W * 0.60, color: '#e0e7ff', duration: 9000, delay: 1400, fromScale: 0.85, toScale: 1.1  },
+  { x: W * 0.5,  y: -H * 0.05, size: W * 0.55, color: '#ddd6fe', duration: 5500, delay: 350,  fromScale: 1.05, toScale: 0.85 },
 ];
 
-function Blob({ config }: { config: BlobConfig }) {
-  const progress = useSharedValue(0);
+function Blob({ cfg }: { cfg: BlobConfig }) {
+  const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    progress.value = withDelay(
-      config.delay,
-      withRepeat(
-        withTiming(1, {
-          duration: config.duration,
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(cfg.delay),
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: cfg.duration,
           easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
         }),
-        -1,
-        true,
-      ),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: cfg.duration,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
     );
+    loop.start();
+    return () => loop.stop();
   }, []);
 
-  const animStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      progress.value,
-      [0, 1],
-      [config.scaleFrom, config.scaleTo],
-    );
-    const opacity = interpolate(progress.value, [0, 0.5, 1], [0.55, 0.75, 0.55]);
-    return { transform: [{ scale }], opacity };
-  });
+  const scale   = anim.interpolate({ inputRange: [0, 1], outputRange: [cfg.fromScale, cfg.toScale] });
+  const opacity = anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.5, 0.72, 0.5] });
 
   return (
     <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          left: config.x,
-          top: config.y,
-          width: config.size,
-          height: config.size,
-          borderRadius: config.size / 2,
-          overflow: 'hidden',
-        },
-        animStyle,
-      ]}
-    >
-      <LinearGradient
-        colors={config.color}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-    </Animated.View>
+      style={{
+        position: 'absolute',
+        left:    cfg.x,
+        top:     cfg.y,
+        width:   cfg.size,
+        height:  cfg.size,
+        borderRadius: cfg.size / 2,
+        backgroundColor: cfg.color,
+        transform: [{ scale }],
+        opacity,
+      }}
+    />
   );
 }
 
 interface EtherealBackgroundProps {
   children?: React.ReactNode;
-  intensity?: number; // 0–1, contrôle l'opacité globale
+  intensity?: number;
 }
 
-export default function EtherealBackground({
-  children,
-  intensity = 0.18,
-}: EtherealBackgroundProps) {
+export default function EtherealBackground({ children, intensity = 0.20 }: EtherealBackgroundProps) {
   return (
     <View style={s.container}>
       {/* Fond blanc */}
-      <View style={[s.base, { backgroundColor: '#f8fafc' }]} />
+      <View style={s.base} />
 
-      {/* Blobs animés */}
+      {/* Blobs */}
       <View style={[s.blobLayer, { opacity: intensity }]}>
-        {BLOBS.map((b, i) => (
-          <Blob key={i} config={b} />
-        ))}
+        {BLOBS.map((b, i) => <Blob key={i} cfg={b} />)}
       </View>
 
-      {/* Voile blanc pour adoucir */}
+      {/* Voile */}
       <View style={s.veil} />
 
       {/* Contenu */}
@@ -152,9 +92,9 @@ export default function EtherealBackground({
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, overflow: 'hidden' },
-  base:      { ...StyleSheet.absoluteFillObject },
+  container: { flex: 1, overflow: 'hidden', backgroundColor: '#f8fafc' },
+  base:      { ...StyleSheet.absoluteFillObject, backgroundColor: '#f8fafc' },
   blobLayer: { ...StyleSheet.absoluteFillObject },
-  veil:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(248,250,252,0.45)' },
+  veil:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(248,250,252,0.50)' },
   content:   { flex: 1 },
 });
