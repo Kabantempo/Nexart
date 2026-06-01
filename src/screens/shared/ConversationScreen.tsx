@@ -26,13 +26,12 @@ function formatDay(iso: string) {
 
 function Bubble({ msg, isOwn }: { msg: Message; isOwn: boolean }) {
   return (
-    <View style={[styles.bubbleWrap, isOwn && styles.bubbleWrapOwn]}>
-      <View style={[styles.bubble, isOwn ? styles.bubbleOwn : styles.bubbleOther]}>
-        <Text style={[styles.bubbleText, isOwn && styles.bubbleTextOwn]}>{msg.content}</Text>
+    <View style={[s.bubbleWrap, isOwn && s.bubbleWrapOwn]}>
+      <View style={[s.bubble, isOwn ? s.bubbleOwn : s.bubbleOther]}>
+        <Text style={[s.bubbleText, isOwn && s.bubbleTextOwn]}>{msg.content}</Text>
       </View>
-      <Text style={[styles.bubbleTime, isOwn && styles.bubbleTimeOwn]}>
-        {formatTime(msg.created_at)}
-        {isOwn && msg.read_at ? '  ✓✓' : ''}
+      <Text style={[s.bubbleTime, isOwn && s.bubbleTimeOwn]}>
+        {formatTime(msg.created_at)}{isOwn && msg.read_at ? '  ✓✓' : ''}
       </Text>
     </View>
   );
@@ -45,11 +44,8 @@ export default function ConversationScreen({ navigation, route }: Props) {
   const [text, setText] = useState('');
   const listRef = useRef<FlatList>(null);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
-    }
+    if (messages.length > 0) setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
   }, [messages.length]);
 
   const handleSend = async () => {
@@ -59,7 +55,6 @@ export default function ConversationScreen({ navigation, route }: Props) {
     await sendMessage(content, otherPartyId);
   };
 
-  // Group messages by day
   const withDayHeaders: Array<Message | { type: 'day'; label: string; id: string }> = [];
   let lastDay = '';
   for (const msg of messages) {
@@ -72,36 +67,35 @@ export default function ConversationScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+      <View style={s.header}>
+        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={s.backText}>←</Text>
         </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerName} numberOfLines={1}>{otherPartyName}</Text>
-          <Text style={styles.headerEvent} numberOfLines={1}>{eventTitle}</Text>
+        <View style={s.headerAvatar}>
+          <Text style={s.headerAvatarText}>{otherPartyName[0]?.toUpperCase() ?? '?'}</Text>
+        </View>
+        <View style={s.headerInfo}>
+          <Text style={s.headerName} numberOfLines={1}>{otherPartyName}</Text>
+          <Text style={s.headerEvent} numberOfLines={1}>{eventTitle}</Text>
         </View>
       </View>
 
-      {/* Messages */}
       {loading ? (
-        <View style={styles.centered}><ActivityIndicator color={colors.primary} size="large" /></View>
+        <View style={s.centered}><ActivityIndicator color={colors.primary} size="large" /></View>
       ) : (
         <FlatList
           ref={listRef}
           data={withDayHeaders}
           keyExtractor={item => ('id' in item ? item.id : item.id)}
-          contentContainerStyle={styles.messageList}
+          contentContainerStyle={s.messageList}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
             if ('type' in item && item.type === 'day') {
               return (
-                <View style={styles.dayHeader}>
-                  <Text style={styles.dayLabel}>{item.label}</Text>
+                <View style={s.dayHeader}>
+                  <Text style={s.dayLabel}>{item.label}</Text>
                 </View>
               );
             }
@@ -109,33 +103,37 @@ export default function ConversationScreen({ navigation, route }: Props) {
             return <Bubble msg={msg} isOwn={msg.sender_id === profile?.id} />;
           }}
           ListEmptyComponent={
-            <View style={styles.emptyChat}>
-              <Text style={styles.emptyChatText}>Commencez la conversation ✨</Text>
+            <View style={s.emptyChat}>
+              <View style={s.emptyChatIcon}>
+                <Text style={s.emptyChatIconText}>✦</Text>
+              </View>
+              <Text style={s.emptyChatText}>Démarrez la conversation</Text>
+              <Text style={s.emptyChatSub}>Partagez les détails de votre stand, posez vos questions…</Text>
             </View>
           }
         />
       )}
 
       {/* Input */}
-      <View style={styles.inputRow}>
+      <View style={s.inputRow}>
         <TextInput
-          style={styles.input}
+          style={s.input}
           placeholder="Votre message…"
-          placeholderTextColor={colors.text.secondary}
+          placeholderTextColor={colors.text.secondary + '80'}
           value={text}
           onChangeText={setText}
           multiline
           maxLength={1000}
-          onSubmitEditing={handleSend}
         />
         <TouchableOpacity
-          style={[styles.sendBtn, (!text.trim() || sending) && styles.sendBtnDisabled]}
+          style={[s.sendBtn, (!text.trim() || sending) && s.sendBtnDisabled]}
           onPress={handleSend}
           disabled={!text.trim() || sending}
+          activeOpacity={0.8}
         >
           {sending
             ? <ActivityIndicator color={colors.text.inverse} size="small" />
-            : <Text style={styles.sendIcon}>↑</Text>
+            : <Text style={s.sendIcon}>↑</Text>
           }
         </TouchableOpacity>
       </View>
@@ -143,7 +141,7 @@ export default function ConversationScreen({ navigation, route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -152,31 +150,36 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  backBtn:    { padding: 4 },
-  backText:   { ...typography.h2, color: colors.text.secondary },
-  headerInfo: { flex: 1 },
-  headerName: { ...typography.label, color: colors.text.primary, fontWeight: '700' },
-  headerEvent:{ ...typography.caption, color: colors.primary },
+  backBtn:         { padding: 4 },
+  backText:        { ...typography.h2, color: colors.text.secondary },
+  headerAvatar:    { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary + '25', alignItems: 'center', justifyContent: 'center' },
+  headerAvatarText:{ ...typography.label, color: colors.primary, fontWeight: '700' },
+  headerInfo:      { flex: 1 },
+  headerName:      { ...typography.label, color: colors.text.primary, fontWeight: '700' },
+  headerEvent:     { ...typography.caption, color: colors.primary },
 
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  messageList: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, flexGrow: 1 },
+  centered:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  messageList: { paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, flexGrow: 1 },
 
   dayHeader: { alignItems: 'center', marginVertical: spacing.md },
-  dayLabel:  { ...typography.caption, color: colors.text.secondary, backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingVertical: 3, borderRadius: radius.full },
+  dayLabel:  { ...typography.caption, color: colors.text.secondary, backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.full },
 
-  bubbleWrap: { marginBottom: spacing.sm, maxWidth: '78%', alignSelf: 'flex-start' },
+  bubbleWrap:    { marginBottom: spacing.sm, maxWidth: '78%', alignSelf: 'flex-start' },
   bubbleWrapOwn: { alignSelf: 'flex-end' },
-  bubble: { borderRadius: radius.lg, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  bubbleOther: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 4 },
-  bubbleOwn:   { backgroundColor: colors.primary, borderBottomRightRadius: 4 },
-  bubbleText:     { ...typography.body, color: colors.text.primary },
-  bubbleTextOwn:  { color: colors.text.inverse },
-  bubbleTime:     { ...typography.caption, color: colors.text.secondary, marginTop: 2, paddingHorizontal: 2 },
-  bubbleTimeOwn:  { textAlign: 'right' },
+  bubble:        { borderRadius: radius.xl, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2 },
+  bubbleOther:   { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
+  bubbleOwn:     { backgroundColor: colors.primary, borderBottomRightRadius: 6,
+                   shadowColor: colors.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 3 },
+  bubbleText:    { ...typography.body, color: colors.text.primary, lineHeight: 20 },
+  bubbleTextOwn: { color: colors.text.inverse },
+  bubbleTime:    { ...typography.caption, color: colors.text.secondary, marginTop: 3, paddingHorizontal: 2 },
+  bubbleTimeOwn: { textAlign: 'right' },
 
-  emptyChat: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
-  emptyChatText: { ...typography.body, color: colors.text.secondary },
+  emptyChat:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60, paddingHorizontal: spacing.xl },
+  emptyChatIcon:   { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md },
+  emptyChatIconText: { fontSize: 24, color: colors.primary },
+  emptyChatText:   { ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs, textAlign: 'center' },
+  emptyChatSub:    { ...typography.body, color: colors.text.secondary, textAlign: 'center', lineHeight: 20 },
 
   inputRow: {
     flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm,
@@ -186,15 +189,17 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1, ...typography.body, color: colors.text.primary,
-    backgroundColor: colors.background, borderRadius: radius.lg,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
-    borderWidth: 1, borderColor: colors.border,
-    maxHeight: 120,
+    backgroundColor: colors.background, borderRadius: radius.xl,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
+    borderWidth: 1, borderColor: colors.border, maxHeight: 120,
   },
   sendBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: colors.primary,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: colors.primary, shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
   },
-  sendBtnDisabled: { backgroundColor: colors.border },
-  sendIcon: { ...typography.h3, color: colors.text.inverse, lineHeight: 24 },
+  sendBtnDisabled: { backgroundColor: colors.border, shadowOpacity: 0 },
+  sendIcon:        { ...typography.h3, color: colors.text.inverse, lineHeight: 24 },
 });

@@ -17,11 +17,13 @@ type Props = {
 };
 
 const EVENT_TYPE_LABEL: Record<string, string> = {
-  permanent: 'Marché permanent',
-  seasonal:  'Marché saisonnier',
-  popup:     'Pop-up',
-  salon:     'Salon',
-  fair:      'Foire',
+  permanent: 'Marché permanent', seasonal: 'Saisonnier',
+  popup: 'Pop-up', salon: 'Salon', fair: 'Foire',
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  permanent: '#3B82F6', seasonal: '#F59E0B',
+  popup: '#A855F7', salon: '#10B981', fair: '#EF4444',
 };
 
 const STATUS_CONFIG = {
@@ -34,16 +36,28 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
+    <View style={s.infoRow}>
+      <Text style={s.infoLabel}>{label}</Text>
+      <Text style={s.infoValue}>{value}</Text>
     </View>
   );
 }
 
-// ─── Apply section ────────────────────────────────────────────────────────────
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={s.section}>
+      <View style={s.sectionHeader}>
+        <View style={s.sectionAccent} />
+        <Text style={s.sectionTitle}>{title}</Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+// ─── Apply section ────────────────────────────────────────
 
 function ApplySection({ eventId, userId }: { eventId: string; userId: string }) {
   const { status, loading: statusLoading } = useApplicationStatus(eventId, userId);
@@ -54,11 +68,8 @@ function ApplySection({ eventId, userId }: { eventId: string; userId: string }) 
   const handleApply = async () => {
     const { error } = await apply(message.trim() || undefined);
     if (error) {
-      if (error.includes('unique')) {
-        Alert.alert('Déjà candidaté', 'Vous avez déjà envoyé une candidature pour ce marché.');
-      } else {
-        Alert.alert('Erreur', error);
-      }
+      if (error.includes('unique')) Alert.alert('Déjà candidaté', 'Vous avez déjà envoyé une candidature pour ce marché.');
+      else Alert.alert('Erreur', error);
       return;
     }
     setExpanded(false);
@@ -70,163 +81,169 @@ function ApplySection({ eventId, userId }: { eventId: string; userId: string }) 
   if (status !== 'none') {
     const cfg = STATUS_CONFIG[status];
     return (
-      <View style={[styles.applyBox, { backgroundColor: cfg.bg }]}>
-        <Text style={[styles.applyStatusText, { color: cfg.color }]}>{cfg.label}</Text>
+      <View style={[s.statusBox, { backgroundColor: cfg.bg }]}>
+        <Text style={[s.statusBoxText, { color: cfg.color }]}>{cfg.label}</Text>
       </View>
     );
   }
 
   if (!expanded) {
     return (
-      <TouchableOpacity style={styles.applyBtn} onPress={() => setExpanded(true)}>
-        <Text style={styles.applyBtnText}>Je m'inscris</Text>
+      <TouchableOpacity style={s.applyBtn} onPress={() => setExpanded(true)} activeOpacity={0.85}>
+        <Text style={s.applyBtnText}>Je m'inscris à ce marché</Text>
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.applyForm}>
-      <Text style={styles.applyFormTitle}>Message pour l'organisateur</Text>
-      <Text style={styles.applyFormHint}>Présentez-vous brièvement (facultatif)</Text>
+    <View style={s.applyForm}>
+      <Text style={s.applyFormTitle}>Message pour l'organisateur</Text>
+      <Text style={s.applyFormHint}>Présentez-vous brièvement (facultatif)</Text>
       <TextInput
-        style={styles.applyInput}
+        style={s.applyInput}
         placeholder="Ex : Je suis céramiste depuis 5 ans, spécialisée en grès…"
-        placeholderTextColor={colors.text.secondary}
+        placeholderTextColor={colors.text.secondary + '80'}
         value={message}
         onChangeText={setMessage}
         multiline
         numberOfLines={4}
         maxLength={500}
       />
-      <Text style={styles.charCount}>{message.length}/500</Text>
-      <View style={styles.applyActions}>
-        <TouchableOpacity style={styles.cancelBtn} onPress={() => setExpanded(false)}>
-          <Text style={styles.cancelBtnText}>Annuler</Text>
+      <Text style={s.charCount}>{message.length}/500</Text>
+      <View style={s.applyActions}>
+        <TouchableOpacity style={s.cancelBtn} onPress={() => setExpanded(false)}>
+          <Text style={s.cancelBtnText}>Annuler</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.confirmBtn, applying && { opacity: 0.6 }]}
+          style={[s.confirmBtn, applying && { opacity: 0.6 }]}
           onPress={handleApply}
           disabled={applying}
+          activeOpacity={0.85}
         >
-          <Text style={styles.confirmBtnText}>{applying ? 'Envoi…' : 'Envoyer ma candidature'}</Text>
+          <Text style={s.confirmBtnText}>{applying ? 'Envoi…' : 'Envoyer ma candidature'}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-// ─── Main screen ──────────────────────────────────────────────────────────────
+// ─── Main screen ──────────────────────────────────────────
 
 export default function EventDetailScreen({ navigation, route }: Props) {
   const { eventId } = route.params;
   const { profile } = useAuth();
   const { event, loading, error } = useEvent(eventId);
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
-  }
+  if (loading) return <View style={s.centered}><ActivityIndicator color={colors.primary} size="large" /></View>;
+  if (error || !event) return (
+    <View style={s.centered}>
+      <Text style={s.errorText}>{error ?? 'Événement introuvable'}</Text>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: spacing.lg }}>
+        <Text style={{ color: colors.primary }}>← Retour</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-  if (error || !event) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>{error ?? 'Événement introuvable'}</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: spacing.lg }}>
-          <Text style={{ color: colors.primary }}>← Retour</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const org = event.organizer;
+  const accent  = TYPE_COLORS[event.event_type] ?? colors.primary;
+  const org     = event.organizer;
   const orgName = org?.organizer_profile?.organization_name ?? org?.full_name ?? '—';
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Back */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Retour</Text>
+    <View style={s.container}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={s.backText}>← Retour</Text>
         </TouchableOpacity>
 
-        {/* Type badge + Title */}
-        <View style={styles.typeBadge}>
-          <Text style={styles.typeBadgeText}>{EVENT_TYPE_LABEL[event.event_type] ?? event.event_type}</Text>
+        {/* Type + title */}
+        <View style={[s.typePill, { backgroundColor: accent + '18' }]}>
+          <Text style={[s.typePillText, { color: accent }]}>{EVENT_TYPE_LABEL[event.event_type] ?? event.event_type}</Text>
         </View>
-        <Text style={styles.title}>{event.title}</Text>
-        <Text style={styles.location}>📍 {[event.location, event.city, event.region].filter(Boolean).join(', ')}</Text>
+        <Text style={s.title}>{event.title}</Text>
+        <Text style={s.location}>{[event.location, event.city, event.region].filter(Boolean).join(', ')}</Text>
 
         {/* Dates */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dates</Text>
-          <Row label="Ouverture"   value={formatDate(event.start_date)} />
-          <Row label="Fermeture"   value={formatDate(event.end_date)} />
-          {event.start_time && <Row label="Horaires" value={`${event.start_time}${event.end_time ? ` → ${event.end_time}` : ''}`} />}
-        </View>
+        <Section title="Dates">
+          <View style={s.infoCard}>
+            <InfoRow label="Ouverture" value={formatDate(event.start_date)} />
+            <View style={s.divider} />
+            <InfoRow label="Fermeture" value={formatDate(event.end_date)} />
+            {event.start_time && (
+              <>
+                <View style={s.divider} />
+                <InfoRow label="Horaires" value={`${event.start_time}${event.end_time ? ` → ${event.end_time}` : ''}`} />
+              </>
+            )}
+          </View>
+        </Section>
 
         {/* Stands */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Stands</Text>
-          <Row label="Capacité"     value={`${event.stand_count} stands`} />
-          {event.stand_price != null && (
-            <Row label="Tarif"      value={event.stand_price === 0 ? 'Gratuit' : `${event.stand_price} €`} />
-          )}
-          {event.stand_dimensions && (
-            <Row label="Dimensions" value={event.stand_dimensions} />
-          )}
-        </View>
+        <Section title="Stands">
+          <View style={s.infoCard}>
+            <InfoRow label="Capacité" value={`${event.stand_count} stands`} />
+            {event.stand_price != null && (
+              <>
+                <View style={s.divider} />
+                <InfoRow label="Tarif" value={event.stand_price === 0 ? 'Gratuit' : `${event.stand_price} €`} />
+              </>
+            )}
+            {event.stand_dimensions && (
+              <>
+                <View style={s.divider} />
+                <InfoRow label="Dimensions" value={event.stand_dimensions} />
+              </>
+            )}
+          </View>
+        </Section>
 
         {/* Disciplines */}
         {event.discipline_tags.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Disciplines recherchées</Text>
-            <View style={styles.tagRow}>
+          <Section title="Disciplines recherchées">
+            <View style={s.tagRow}>
               {event.discipline_tags.map(t => (
-                <View key={t} style={styles.tag}>
-                  <Text style={styles.tagText}>{t}</Text>
+                <View key={t} style={[s.tag, { borderColor: accent + '50', backgroundColor: accent + '10' }]}>
+                  <Text style={[s.tagText, { color: accent }]}>{t}</Text>
                 </View>
               ))}
             </View>
-          </View>
+          </Section>
         )}
 
         {/* Description */}
         {event.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.body}>{event.description}</Text>
-          </View>
+          <Section title="Description">
+            <Text style={s.body}>{event.description}</Text>
+          </Section>
         )}
 
         {/* Rules */}
         {event.rules && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Règlement</Text>
-            <Text style={styles.body}>{event.rules}</Text>
-          </View>
+          <Section title="Règlement">
+            <View style={s.rulesBox}>
+              <Text style={s.rulesText}>{event.rules}</Text>
+            </View>
+          </Section>
         )}
 
         {/* Organizer */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Organisateur</Text>
-          <View style={styles.orgRow}>
-            <View style={styles.orgAvatar}>
-              <Text style={styles.orgAvatarText}>{orgName[0]?.toUpperCase() ?? '?'}</Text>
+        <Section title="Organisateur">
+          <View style={s.orgCard}>
+            <View style={s.orgAvatar}>
+              <Text style={s.orgAvatarText}>{orgName[0]?.toUpperCase() ?? '?'}</Text>
             </View>
-            <Text style={styles.orgName}>{orgName}</Text>
+            <View>
+              <Text style={s.orgName}>{orgName}</Text>
+              <Text style={s.orgRole}>Organisateur</Text>
+            </View>
           </View>
-        </View>
+        </Section>
 
-        {/* Spacer for sticky footer */}
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Sticky apply footer */}
+      {/* Sticky footer */}
       {profile?.role === 'creator' && profile.id && (
-        <View style={styles.footer}>
+        <View style={s.footer}>
           <ApplySection eventId={eventId} userId={profile.id} />
         </View>
       )}
@@ -234,80 +251,74 @@ export default function EventDetailScreen({ navigation, route }: Props) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.xl, paddingTop: spacing.xxl },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
+  content:   { padding: spacing.xl, paddingTop: spacing.xxl },
+  centered:  { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background },
   errorText: { ...typography.body, color: colors.error },
 
-  backBtn: { marginBottom: spacing.xl },
+  backBtn:  { marginBottom: spacing.xl },
   backText: { color: colors.text.secondary },
 
-  typeBadge: {
-    alignSelf: 'flex-start', backgroundColor: colors.primary + '20',
-    borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 3, marginBottom: spacing.sm,
-  },
-  typeBadgeText: { ...typography.caption, color: colors.primary, fontWeight: '600' },
-  title: { ...typography.h1, color: colors.text.primary, marginBottom: spacing.sm },
-  location: { ...typography.body, color: colors.text.secondary, marginBottom: spacing.xl },
+  typePill:     { alignSelf: 'flex-start', paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.full, marginBottom: spacing.sm },
+  typePillText: { ...typography.caption, fontWeight: '700', textTransform: 'capitalize' },
+  title:        { ...typography.h1, color: colors.text.primary, marginBottom: spacing.sm, lineHeight: 38 },
+  location:     { ...typography.body, color: colors.text.secondary, marginBottom: spacing.xl },
 
-  section: { marginBottom: spacing.xl },
-  sectionTitle: {
-    ...typography.label, color: colors.text.secondary, textTransform: 'uppercase',
-    letterSpacing: 1, marginBottom: spacing.md, borderBottomWidth: 1,
-    borderColor: colors.border, paddingBottom: spacing.xs,
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs },
-  rowLabel: { ...typography.body, color: colors.text.secondary },
-  rowValue: { ...typography.body, color: colors.text.primary, fontWeight: '500', flex: 1, textAlign: 'right' },
-  body: { ...typography.body, color: colors.text.primary, lineHeight: 22 },
+  section:      { marginBottom: spacing.xl },
+  sectionHeader:{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  sectionAccent:{ width: 3, height: 16, borderRadius: 2, backgroundColor: colors.primary },
+  sectionTitle: { ...typography.label, color: colors.text.secondary, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },
+
+  infoCard:  { backgroundColor: colors.surface, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
+  infoRow:   { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  infoLabel: { ...typography.body, color: colors.text.secondary },
+  infoValue: { ...typography.body, color: colors.text.primary, fontWeight: '500', flex: 1, textAlign: 'right' },
+  divider:   { height: 1, backgroundColor: colors.border, marginHorizontal: spacing.lg },
+
+  body: { ...typography.body, color: colors.text.primary, lineHeight: 24 },
 
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  tag: { borderWidth: 1, borderColor: colors.primary + '60', borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 4 },
-  tagText: { ...typography.caption, color: colors.primary },
+  tag:    { borderWidth: 1, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 5 },
+  tagText:{ ...typography.caption, fontWeight: '600' },
 
-  orgRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  orgAvatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: colors.secondary + '30', alignItems: 'center', justifyContent: 'center',
-  },
+  rulesBox:  { backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, borderLeftWidth: 3, borderLeftColor: colors.primary + '60' },
+  rulesText: { ...typography.body, color: colors.text.primary, lineHeight: 24 },
+
+  orgCard:       { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1, borderColor: colors.border },
+  orgAvatar:     { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.secondary + '25', alignItems: 'center', justifyContent: 'center' },
   orgAvatarText: { ...typography.h3, color: colors.secondary },
-  orgName: { ...typography.body, color: colors.text.primary, fontWeight: '500' },
+  orgName:       { ...typography.label, color: colors.text.primary, fontWeight: '700' },
+  orgRole:       { ...typography.caption, color: colors.text.secondary },
 
-  // Footer
   footer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: colors.surface, borderTopWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface + 'F5',
+    borderTopWidth: 1, borderColor: colors.border,
     padding: spacing.lg, paddingBottom: spacing.xl,
   },
+  statusBox:     { borderRadius: radius.xl, padding: spacing.md, alignItems: 'center' },
+  statusBoxText: { ...typography.label, fontWeight: '700' },
   applyBtn: {
-    backgroundColor: colors.primary, borderRadius: radius.md,
-    padding: spacing.md, alignItems: 'center',
+    backgroundColor: colors.primary, borderRadius: radius.xl,
+    paddingVertical: 16, alignItems: 'center',
+    shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
   },
-  applyBtnText: { ...typography.h3, color: colors.text.inverse, fontWeight: '700' },
-  applyBox: { borderRadius: radius.md, padding: spacing.md, alignItems: 'center' },
-  applyStatusText: { ...typography.label, fontWeight: '600' },
-
-  applyForm: {},
-  applyFormTitle: { ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs },
+  applyBtnText:  { ...typography.h3, color: colors.text.inverse, fontWeight: '700' },
+  applyForm:     {},
+  applyFormTitle:{ ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs },
   applyFormHint: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
   applyInput: {
     backgroundColor: colors.background, color: colors.text.primary,
-    borderRadius: radius.md, padding: spacing.md, borderWidth: 1,
-    borderColor: colors.border, textAlignVertical: 'top', minHeight: 90,
+    borderRadius: radius.xl, padding: spacing.md,
+    borderWidth: 1, borderColor: colors.border,
+    textAlignVertical: 'top', minHeight: 90, fontSize: 15,
   },
-  charCount: { ...typography.caption, color: colors.text.secondary, textAlign: 'right', marginBottom: spacing.md },
-  applyActions: { flexDirection: 'row', gap: spacing.sm },
-  cancelBtn: {
-    paddingHorizontal: spacing.lg, padding: spacing.md, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.border, alignItems: 'center',
-  },
+  charCount:     { ...typography.caption, color: colors.text.secondary, textAlign: 'right', marginBottom: spacing.md },
+  applyActions:  { flexDirection: 'row', gap: spacing.sm },
+  cancelBtn:     { paddingHorizontal: spacing.lg, padding: spacing.md, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
   cancelBtnText: { ...typography.label, color: colors.text.secondary },
-  confirmBtn: {
-    flex: 1, backgroundColor: colors.primary, borderRadius: radius.md,
-    padding: spacing.md, alignItems: 'center',
-  },
-  confirmBtnText: { ...typography.label, color: colors.text.inverse, fontWeight: '700' },
+  confirmBtn:    { flex: 1, backgroundColor: colors.primary, borderRadius: radius.xl, padding: spacing.md, alignItems: 'center' },
+  confirmBtnText:{ ...typography.label, color: colors.text.inverse, fontWeight: '700' },
 });

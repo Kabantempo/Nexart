@@ -127,7 +127,7 @@ const s = StyleSheet.create({
     elevation: 5,
   },
   btnLoading: { opacity: 0.7 },
-  btnText: { ...typography.label, color: '#0D0D0D', fontSize: 16, fontWeight: '700' },
+  btnText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '700' },
 
   link: { color: colors.secondary, textAlign: 'center', marginTop: spacing.md },
 });

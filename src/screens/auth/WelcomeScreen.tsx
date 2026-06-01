@@ -158,7 +158,7 @@ const s = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  btnPrimaryText: { ...typography.label, color: '#0D0D0D', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  btnPrimaryText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
 
   btnSecondary: {
     paddingVertical: 16, borderRadius: radius.xl,
