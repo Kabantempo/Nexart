@@ -214,14 +214,13 @@ export default function FeedScreen() {
                 contentContainerStyle={s.hRow}
                 ItemSeparatorComponent={() => <View style={{ width: spacing.sm }} />}
                 renderItem={({ item }) => (
-                  <CreatorCard
+                  <MarketCard
                     id={item.id}
-                    fullName={item.full_name}
-                    avatarUrl={item.avatar_url}
-                    discipline={item.disciplines?.[0]}
-                    city={item.city ?? undefined}
-                    portfolioImages={item.portfolio_images ?? []}
-                    siretVerified={item.siret_verified}
+                    imageUrl={(item.portfolio_images ?? [])[0] ?? item.avatar_url ?? null}
+                    title={item.full_name}
+                    subtitle={`${item.disciplines?.[0] ?? 'Créateur'} · ${item.city ?? '—'}`}
+                    rating={0}
+                    discountLabel={item.siret_verified ? 'SIRET ✓' : undefined}
                     onPress={() => nav.navigate('Découvrir', { screen: 'PublicCreatorProfile', params: { creatorId: item.id } })}
                   />
                 )}
