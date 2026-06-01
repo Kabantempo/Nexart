@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, Image, Platform, FlatList, Dimensions,
+  ScrollView, Alert, ActivityIndicator, Image, Platform, FlatList, Dimensions, Linking,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -436,6 +436,16 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.btnLogout} onPress={() => supabase.auth.signOut()}>
         <Text style={styles.btnLogoutText}>Se déconnecter</Text>
       </TouchableOpacity>
+
+      <View style={styles.legalRow}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://nexart.app/cgu.html')}>
+          <Text style={styles.legalLink}>CGU</Text>
+        </TouchableOpacity>
+        <Text style={styles.legalSep}>·</Text>
+        <TouchableOpacity onPress={() => Linking.openURL('https://nexart.app/privacy.html')}>
+          <Text style={styles.legalLink}>Confidentialité</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -512,4 +522,7 @@ const styles = StyleSheet.create({
     padding: spacing.md, borderRadius: radius.md, alignItems: 'center',
   },
   btnLogoutText: { color: colors.error, fontWeight: '600' },
+  legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: spacing.lg, gap: spacing.sm },
+  legalLink: { ...typography.caption, color: colors.text.secondary, textDecorationLine: 'underline' },
+  legalSep:  { ...typography.caption, color: colors.text.secondary },
 });

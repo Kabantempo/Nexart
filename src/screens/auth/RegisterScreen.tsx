@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Linking } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParams } from '../../navigation/AuthNavigator';
 import { supabase } from '../../lib/supabase';
@@ -98,6 +98,18 @@ export default function RegisterScreen({ navigation }: Props) {
         <Text style={styles.btnText}>{loading ? 'Création…' : 'Créer mon compte'}</Text>
       </TouchableOpacity>
 
+      <Text style={styles.legal}>
+        En créant un compte, vous acceptez nos{' '}
+        <Text style={styles.legalLink} onPress={() => Linking.openURL('https://nexart.app/cgu.html')}>
+          Conditions d'utilisation
+        </Text>
+        {' '}et notre{' '}
+        <Text style={styles.legalLink} onPress={() => Linking.openURL('https://nexart.app/privacy.html')}>
+          Politique de confidentialité
+        </Text>
+        .
+      </Text>
+
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.link}>Déjà un compte ? Se connecter</Text>
       </TouchableOpacity>
@@ -151,4 +163,6 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.5 },
   btnText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '600' },
   link: { color: colors.secondary, textAlign: 'center', marginTop: spacing.lg },
+  legal: { ...typography.caption, color: colors.text.secondary, textAlign: 'center', marginTop: spacing.lg, lineHeight: 18 },
+  legalLink: { color: colors.primary, textDecorationLine: 'underline' },
 });
