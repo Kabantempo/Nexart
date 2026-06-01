@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator,
+  TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Image,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { MessageStackParams } from '../../navigation/MessageStack';
@@ -24,15 +25,33 @@ function formatDay(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
-function Bubble({ msg, isOwn }: { msg: Message; isOwn: boolean }) {
+function MiniAvatar({ avatarUrl, name }: { avatarUrl?: string | null; name: string }) {
+  if (avatarUrl) {
+    return <Image source={{ uri: avatarUrl }} style={s.miniAvatar} />;
+  }
+  return (
+    <View style={s.miniAvatarFallback}>
+      <Ionicons name="person" size={13} color={colors.primary} />
+    </View>
+  );
+}
+
+function Bubble({ msg, isOwn, otherAvatarUrl, otherName }: {
+  msg: Message; isOwn: boolean; otherAvatarUrl?: string | null; otherName: string;
+}) {
   return (
     <View style={[s.bubbleWrap, isOwn && s.bubbleWrapOwn]}>
-      <View style={[s.bubble, isOwn ? s.bubbleOwn : s.bubbleOther]}>
-        <Text style={[s.bubbleText, isOwn && s.bubbleTextOwn]}>{msg.content}</Text>
+      {!isOwn && (
+        <MiniAvatar avatarUrl={otherAvatarUrl} name={otherName} />
+      )}
+      <View style={s.bubbleContent}>
+        <View style={[s.bubble, isOwn ? s.bubbleOwn : s.bubbleOther]}>
+          <Text style={[s.bubbleText, isOwn && s.bubbleTextOwn]}>{msg.content}</Text>
+        </View>
+        <Text style={[s.bubbleTime, isOwn && s.bubbleTimeOwn]}>
+          {formatTime(msg.created_at)}{isOwn && msg.read_at ? '  ✓✓' : ''}
+        </Text>
       </View>
-      <Text style={[s.bubbleTime, isOwn && s.bubbleTimeOwn]}>
-        {formatTime(msg.created_at)}{isOwn && msg.read_at ? '  ✓✓' : ''}
-      </Text>
     </View>
   );
 }
@@ -100,7 +119,14 @@ export default function ConversationScreen({ navigation, route }: Props) {
               );
             }
             const msg = item as Message;
-            return <Bubble msg={msg} isOwn={msg.sender_id === profile?.id} />;
+            return (
+              <Bubble
+                msg={msg}
+                isOwn={msg.sender_id === profile?.id}
+                otherAvatarUrl={(route.params as any).otherPartyAvatarUrl}
+                otherName={otherPartyName}
+              />
+            );
           }}
           ListEmptyComponent={
             <View style={s.emptyChat}>
@@ -164,8 +190,13 @@ const s = StyleSheet.create({
   dayHeader: { alignItems: 'center', marginVertical: spacing.md },
   dayLabel:  { ...typography.caption, color: colors.text.secondary, backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingVertical: 4, borderRadius: radius.full },
 
-  bubbleWrap:    { marginBottom: spacing.sm, maxWidth: '78%', alignSelf: 'flex-start' },
-  bubbleWrapOwn: { alignSelf: 'flex-end' },
+  // Mini avatar next to message
+  miniAvatar:         { width: 28, height: 28, borderRadius: 14, marginRight: spacing.xs, marginTop: 2, flexShrink: 0 },
+  miniAvatarFallback: { width: 28, height: 28, borderRadius: 14, marginRight: spacing.xs, marginTop: 2, flexShrink: 0, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+
+  bubbleWrap:    { marginBottom: spacing.sm, maxWidth: '82%', alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'flex-end' },
+  bubbleWrapOwn: { alignSelf: 'flex-end', flexDirection: 'row' },
+  bubbleContent: { flex: 1 },
   bubble:        { borderRadius: radius.xl, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2 },
   bubbleOther:   { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 6 },
   bubbleOwn:     { backgroundColor: colors.primary, borderBottomRightRadius: 6,

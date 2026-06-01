@@ -8,10 +8,11 @@ import ConversationScreen  from '../screens/shared/ConversationScreen';
 export type MessageStackParams = {
   ConversationList: undefined;
   Conversation: {
-    conversationId: string;
-    eventTitle: string;
-    otherPartyName: string;
-    otherPartyId?: string;
+    conversationId:     string;
+    eventTitle:         string;
+    otherPartyName:     string;
+    otherPartyId?:      string;
+    otherPartyAvatarUrl?: string | null;
   };
 };
 

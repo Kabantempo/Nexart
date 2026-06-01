@@ -186,10 +186,11 @@ export default function MessagesScreen({ navigation }: Props) {
                 const isC = item.creator_id === profile?.id;
                 const other = isC ? item.organizer : item.creator;
                 navigation.navigate('Conversation', {
-                  conversationId: item.id,
-                  eventTitle: item.event?.title ?? 'Marché',
-                  otherPartyName: other?.full_name ?? '—',
-                  otherPartyId: other?.id,
+                  conversationId:      item.id,
+                  eventTitle:          item.event?.title ?? 'Marché',
+                  otherPartyName:      other?.full_name ?? '—',
+                  otherPartyId:        other?.id,
+                  otherPartyAvatarUrl: (other as any)?.avatar_url ?? null,
                 });
               }}
             />
