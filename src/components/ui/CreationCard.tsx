@@ -57,11 +57,6 @@ export function CreationCard({ post }: { post: Post }) {
           </View>
         )}
 
-        {/* Badge type en haut à droite */}
-        <View style={[s.typeBadge, { backgroundColor: typeColor + '20', borderColor: typeColor + '50' }]}>
-          <Text style={[s.typeText, { color: typeColor }]}>{typeLabel}</Text>
-        </View>
-
         {/* Like overlay bas droite */}
         <TouchableOpacity style={s.likeOverlay} onPress={toggle} activeOpacity={0.8}>
           <Ionicons name={liked ? 'heart' : 'heart-outline'} size={16} color={liked ? '#ef4444' : '#fff'} />
