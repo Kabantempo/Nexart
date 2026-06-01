@@ -12,6 +12,7 @@ import { colors, spacing, typography, radius } from '../../constants/theme';
 import { SwipeCard, CardStat } from '../../components/ui/SwipeCard';
 import { HorizontalCardList } from '../../components/ui/HorizontalCardList';
 import { AppHeader } from '../../components/ui/AppHeader';
+import { CreatorCard } from '../../components/ui/CreatorCard';
 
 const TYPE_COLORS: Record<string, string> = {
   permanent: '#3B82F6', seasonal: '#F59E0B',
@@ -182,8 +183,17 @@ export default function DiscoverHomeScreen() {
           keyExtractor={c => c.id}
           emptyText="Aucun créateur trouvé"
           renderCard={(creator) => (
-            <SwipeCard
-              {...creatorToCardProps(creator, () => nav.navigate('PublicCreatorProfile', { creatorId: creator.id }))}
+            <CreatorCard
+              id={creator.id}
+              fullName={creator.full_name}
+              avatarUrl={creator.avatar_url}
+              discipline={creator.disciplines[0]}
+              city={creator.city ?? undefined}
+              bio={creator.bio ?? undefined}
+              portfolioImages={creator.portfolio_images ?? []}
+              siretVerified={creator.siret_verified}
+              insuranceVerified={creator.insurance_verified}
+              onPress={() => nav.navigate('PublicCreatorProfile', { creatorId: creator.id })}
             />
           )}
         />

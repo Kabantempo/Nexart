@@ -14,6 +14,7 @@ import { useFollowedCreators } from '../../hooks/useFollow';
 import PostCard from '../../components/PostCard';
 import { AppHeader } from '../../components/ui/AppHeader';
 import { MarketCard } from '../../components/ui/MarketCard';
+import { CreatorCard } from '../../components/ui/CreatorCard';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 const today     = new Date();
@@ -200,8 +201,14 @@ export default function FeedScreen() {
                 contentContainerStyle={s.hRow}
                 ItemSeparatorComponent={() => <View style={{ width: spacing.sm }} />}
                 renderItem={({ item }) => (
-                  <CreatorChip
-                    creator={item}
+                  <CreatorCard
+                    id={item.id}
+                    fullName={item.full_name}
+                    avatarUrl={item.avatar_url}
+                    discipline={item.disciplines?.[0]}
+                    city={item.city ?? undefined}
+                    portfolioImages={item.portfolio_images ?? []}
+                    siretVerified={item.siret_verified}
                     onPress={() => nav.navigate('Découvrir', { screen: 'PublicCreatorProfile', params: { creatorId: item.id } })}
                   />
                 )}
