@@ -30,9 +30,6 @@ function EventFeedCard({ event }: { event: any }) {
 
   return (
     <View style={s.eventWrap}>
-      <View style={s.eventLabel}>
-        <Text style={s.eventLabelText}>Marché à venir</Text>
-      </View>
       <SwipeCard
         title={event.title}
         subtitle={event.event_type}
