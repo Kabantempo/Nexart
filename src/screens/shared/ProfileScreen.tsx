@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, Image, Platform, FlatList, Dimensions, Linking,
+  ScrollView, Alert, ActivityIndicator, Image, Platform,
+  FlatList, Dimensions, Linking, Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 
 const SCREEN_W = Dimensions.get('window').width;
@@ -139,10 +142,10 @@ const porto = StyleSheet.create({
 
 // ─── Creator profile section ──────────────────────────────────────────────────
 
-function CreatorProfileSection({ userId }: { userId: string }) {
+function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: () => void }) {
   const { profile, refetchProfile } = useAuth();
   const { creatorProfile, loading, saving, upsert, updateBio } = useCreatorProfile(userId);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // toujours en mode édition dans le modal
 
   // form state
   const [bio, setBio]                   = useState('');
@@ -181,6 +184,7 @@ function CreatorProfileSection({ userId }: { userId: string }) {
     if (e1) { Alert.alert('Erreur', e1); return; }
     await refetchProfile();
     setIsEditing(false);
+    onSaved?.();
   };
 
   if (loading) return <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />;
@@ -363,12 +367,146 @@ function OrganizerProfileSection({ userId }: { userId: string }) {
   );
 }
 
+// ─── Creator profile view (mode lecture, style Instagram) ────────────────────
+
+function CreatorProfileView({ userId, onEdit }: { userId: string; onEdit: () => void }) {
+  const { creatorProfile, loading } = useCreatorProfile(userId);
+  const { profile }  = useAuth();
+  const { average, count, isTrusted } = useProfileReviews(userId);
+  const insets = useSafeAreaInsets();
+  const W = Dimensions.get('window').width;
+  const CELL = (W - spacing.xl * 2 - spacing.xs * 2) / 3;
+
+  if (loading) return <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xxl }} />;
+
+  const portfolioImages = creatorProfile?.portfolio_images ?? [];
+
+  return (
+    <ScrollView
+      style={profileViewStyles.container}
+      contentContainerStyle={{ paddingBottom: spacing.xxl }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ── Header profil ── */}
+      <View style={[profileViewStyles.header, { paddingTop: insets.top + spacing.md }]}>
+        {/* Avatar */}
+        <View style={profileViewStyles.avatarWrap}>
+          {profile?.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={profileViewStyles.avatar} />
+          ) : (
+            <View style={profileViewStyles.avatarFallback}>
+              <Ionicons name="person" size={32} color={colors.primary} />
+            </View>
+          )}
+        </View>
+
+        {/* Stats */}
+        <View style={profileViewStyles.statsRow}>
+          <View style={profileViewStyles.stat}>
+            <Text style={profileViewStyles.statNum}>{portfolioImages.length}</Text>
+            <Text style={profileViewStyles.statLabel}>œuvres</Text>
+          </View>
+          <View style={profileViewStyles.stat}>
+            <Text style={profileViewStyles.statNum}>{count}</Text>
+            <Text style={profileViewStyles.statLabel}>avis</Text>
+          </View>
+          <View style={profileViewStyles.stat}>
+            <Text style={profileViewStyles.statNum}>{average != null ? `${average}/5` : '—'}</Text>
+            <Text style={profileViewStyles.statLabel}>note</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* ── Bio ── */}
+      <View style={profileViewStyles.bio}>
+        <Text style={profileViewStyles.name}>{profile?.full_name}</Text>
+        {creatorProfile?.disciplines?.length ? (
+          <Text style={profileViewStyles.disciplines}>{creatorProfile.disciplines.join(' · ')}</Text>
+        ) : null}
+        {profile?.bio ? (
+          <Text style={profileViewStyles.bioText}>{profile.bio}</Text>
+        ) : null}
+        {creatorProfile?.city ? (
+          <View style={profileViewStyles.locationRow}>
+            <Ionicons name="location-outline" size={13} color={colors.text.secondary} />
+            <Text style={profileViewStyles.location}>{creatorProfile.city}{creatorProfile.region ? `, ${creatorProfile.region}` : ''}</Text>
+          </View>
+        ) : null}
+        {isTrusted && (
+          <View style={profileViewStyles.trustBadge}>
+            <Ionicons name="checkmark-circle" size={13} color={colors.success} />
+            <Text style={profileViewStyles.trustText}>Créateur de confiance</Text>
+          </View>
+        )}
+      </View>
+
+      {/* ── Boutons ── */}
+      <View style={profileViewStyles.actions}>
+        <TouchableOpacity style={profileViewStyles.btnEdit} onPress={onEdit} activeOpacity={0.85}>
+          <Text style={profileViewStyles.btnEditText}>Modifier le profil</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={profileViewStyles.btnShare} activeOpacity={0.85}>
+          <Ionicons name="share-outline" size={16} color={colors.text.primary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Grille portfolio ── */}
+      {portfolioImages.length > 0 ? (
+        <View style={profileViewStyles.grid}>
+          {portfolioImages.map((uri, i) => (
+            <Image key={i} source={{ uri }} style={{ width: CELL, height: CELL, borderRadius: radius.sm }} resizeMode="cover" />
+          ))}
+        </View>
+      ) : (
+        <View style={profileViewStyles.emptyGrid}>
+          <Ionicons name="camera-outline" size={40} color={colors.border} />
+          <Text style={profileViewStyles.emptyGridText}>Aucune œuvre publiée</Text>
+          <Text style={profileViewStyles.emptyGridSub}>Ajoutez des photos dans "Modifier le profil"</Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const profileViewStyles = StyleSheet.create({
+  container:    { flex: 1, backgroundColor: colors.background },
+  header:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.xl, paddingBottom: spacing.md, gap: spacing.xl },
+  avatarWrap:   {},
+  avatar:       { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: colors.primary + '50' },
+  avatarFallback: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.primary + '30' },
+  statsRow:     { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  stat:         { alignItems: 'center' },
+  statNum:      { ...typography.h3, color: colors.text.primary, fontWeight: '700' },
+  statLabel:    { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
+
+  bio:          { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+  name:         { ...typography.label, color: colors.text.primary, fontWeight: '700', fontSize: 15, marginBottom: 2 },
+  disciplines:  { ...typography.caption, color: colors.primary, fontWeight: '600', marginBottom: 4 },
+  bioText:      { ...typography.caption, color: colors.text.primary, lineHeight: 18, marginBottom: 4 },
+  locationRow:  { flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 4 },
+  location:     { ...typography.caption, color: colors.text.secondary },
+  trustBadge:   { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.success + '15', borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 3, alignSelf: 'flex-start' },
+  trustText:    { ...typography.caption, color: colors.success, fontWeight: '700', fontSize: 11 },
+
+  actions:      { flexDirection: 'row', paddingHorizontal: spacing.xl, gap: spacing.sm, marginBottom: spacing.md },
+  btnEdit:      { flex: 1, backgroundColor: colors.muted, borderRadius: radius.lg, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: colors.border },
+  btnEditText:  { ...typography.label, color: colors.text.primary, fontWeight: '600' },
+  btnShare:     { width: 38, height: 38, borderRadius: radius.lg, backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+
+  grid:         { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.xl, gap: spacing.xs },
+  emptyGrid:    { alignItems: 'center', paddingTop: spacing.xxl, paddingHorizontal: spacing.xl },
+  emptyGridText:{ ...typography.h3, color: colors.text.primary, marginTop: spacing.md },
+  emptyGridSub: { ...typography.body, color: colors.text.secondary, textAlign: 'center', marginTop: spacing.xs },
+});
+
 // ─── Main ProfileScreen ───────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
   const { profile, refetchProfile } = useAuth();
   const { average, count, isTrusted } = useProfileReviews(profile?.id);
+  const [showEdit, setShowEdit]       = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const pickAvatar = async () => {
     if (Platform.OS !== 'web') {
@@ -397,6 +535,46 @@ export default function ProfileScreen() {
     setUploadingAvatar(false);
   };
 
+  // ── Créateur : vue profil Instagram + modal édition ──
+  if (profile?.role === 'creator' && profile?.id) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <CreatorProfileView userId={profile.id} onEdit={() => setShowEdit(true)} />
+
+        {/* Modal édition */}
+        <Modal visible={showEdit} animationType="slide" presentationStyle="pageSheet">
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
+            {/* Header modal */}
+            <View style={[styles.modalHeader, { paddingTop: insets.top + spacing.sm }]}>
+              <TouchableOpacity onPress={() => setShowEdit(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Modifier le profil</Text>
+              <View style={{ width: 32 }} />
+            </View>
+            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+              {/* Avatar */}
+              <TouchableOpacity style={styles.avatarEditRow} onPress={pickAvatar} disabled={uploadingAvatar}>
+                {profile?.avatar_url ? (
+                  <Image source={{ uri: profile.avatar_url }} style={styles.avatarImg} />
+                ) : (
+                  <View style={styles.avatar}>
+                    {uploadingAvatar ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>}
+                  </View>
+                )}
+                <Text style={styles.changePhotoText}>Changer la photo</Text>
+              </TouchableOpacity>
+              <CreatorProfileSection userId={profile.id} onSaved={() => setShowEdit(false)} />
+            </ScrollView>
+          </View>
+        </Modal>
+
+        {/* Déconnexion + mentions légales en bas de la vue profil */}
+      </View>
+    );
+  }
+
+  // ── Organisateur & visiteur : vue classique ──
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
@@ -407,8 +585,7 @@ export default function ProfileScreen() {
             <View style={styles.avatar}>
               {uploadingAvatar
                 ? <ActivityIndicator color={colors.primary} />
-                : <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-              }
+                : <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>}
             </View>
           )}
           <View style={styles.avatarEditBadge}><Text style={styles.avatarEditIcon}>✎</Text></View>
@@ -416,20 +593,13 @@ export default function ProfileScreen() {
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{profile?.full_name}</Text>
           <Text style={styles.roleLabel}>
-            {profile?.role === 'creator' ? 'Créateur / Artisan' : profile?.role === 'organizer' ? 'Organisateur' : 'Visiteur'}
+            {profile?.role === 'organizer' ? 'Organisateur' : 'Visiteur'}
           </Text>
-          {average !== null && (
-            <Text style={styles.rating}>{'★'.repeat(Math.round(average))} {average}/5 · {count} avis</Text>
-          )}
-          {isTrusted && (
-            <View style={styles.trustBadge}><Text style={styles.trustBadgeText}>✓ Créateur de confiance</Text></View>
-          )}
+          {average !== null && <Text style={styles.rating}>{'★'.repeat(Math.round(average))} {average}/5 · {count} avis</Text>}
         </View>
       </View>
 
-      {profile?.role === 'creator' && profile?.id ? (
-        <CreatorProfileSection userId={profile.id} />
-      ) : profile?.role === 'organizer' && profile?.id ? (
+      {profile?.role === 'organizer' && profile?.id ? (
         <OrganizerProfileSection userId={profile.id} />
       ) : null}
 
@@ -516,6 +686,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border, alignItems: 'center',
   },
   btnSecondaryText: { ...typography.label, color: colors.text.primary },
+
+  // Modal édition
+  modalHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.xl, paddingBottom: spacing.md, borderBottomWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  modalTitle:     { ...typography.h3, color: colors.text.primary, fontWeight: '700' },
+  modalClose:     { ...typography.h3, color: colors.text.secondary, padding: spacing.xs },
+  avatarEditRow:  { alignItems: 'center', paddingVertical: spacing.xl },
+  changePhotoText:{ ...typography.caption, color: colors.primary, fontWeight: '600', marginTop: spacing.xs },
 
   btnLogout: {
     marginTop: spacing.xxl, borderWidth: 1, borderColor: colors.error,
