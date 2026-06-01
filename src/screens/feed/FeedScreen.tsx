@@ -10,6 +10,7 @@ import { useFeed, FeedItem } from '../../hooks/useFeed';
 import { useFollowedCreators } from '../../hooks/useFollow';
 import PostCard from '../../components/PostCard';
 import { SwipeCard, CardStat } from '../../components/ui/SwipeCard';
+import { AppHeader } from '../../components/ui/AppHeader';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -59,14 +60,11 @@ export default function FeedScreen() {
 
   return (
     <View style={s.container}>
-      <View style={[s.header, { paddingTop: insets.top + spacing.sm }]}>
-        <Text style={s.logo}>Nexart</Text>
-        {isCreator && (
-          <TouchableOpacity style={s.createBtn} onPress={() => nav.navigate('CreatePost')}>
-            <Text style={s.createBtnText}>+ Post</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <AppHeader
+        showFavorites={!isCreator}
+        showCreate={isCreator}
+        onCreatePress={() => nav.navigate('CreatePost')}
+      />
 
       {loading ? (
         <View style={s.centered}><ActivityIndicator color={colors.primary} size="large" /></View>

@@ -11,6 +11,7 @@ import { DISCIPLINE_TAGS, Event, PublicCreatorProfile } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 import { SwipeCard, CardStat } from '../../components/ui/SwipeCard';
 import { HorizontalCardList } from '../../components/ui/HorizontalCardList';
+import { AppHeader } from '../../components/ui/AppHeader';
 
 const TYPE_COLORS: Record<string, string> = {
   permanent: '#3B82F6', seasonal: '#F59E0B',
@@ -97,12 +98,12 @@ export default function DiscoverHomeScreen() {
   return (
     <ScrollView
       style={s.container}
-      contentContainerStyle={[s.content, { paddingTop: insets.top + spacing.md }]}
+      contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
+      <AppHeader showFavorites />
       <View style={s.hero}>
-        <Text style={s.logo}>Nexart</Text>
         <Text style={s.subtitle}>Marchés artisanaux & créateurs indépendants</Text>
       </View>
 

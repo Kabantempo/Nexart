@@ -11,6 +11,7 @@ import { colors, spacing, typography, radius } from '../../constants/theme';
 import { Event } from '../../types';
 import { SwipeCard, CardStat } from '../../components/ui/SwipeCard';
 import { HorizontalCardList } from '../../components/ui/HorizontalCardList';
+import { AppHeader } from '../../components/ui/AppHeader';
 
 const TYPE_COLORS: Record<string, string> = {
   permanent: '#3B82F6', seasonal: '#F59E0B',
@@ -129,7 +130,9 @@ export default function CreatorHomeScreen() {
   const firstName     = profile?.full_name?.split(' ')[0] ?? 'artisan';
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={[s.content, { paddingTop: insets.top + spacing.sm }]} showsVerticalScrollIndicator={false}>
+    <View style={s.container}>
+      <AppHeader showFavorites={false} />
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
 
       {/* Greeting */}
       <View style={s.greetingWrap}>
@@ -192,6 +195,7 @@ export default function CreatorHomeScreen() {
       )}
 
     </ScrollView>
+    </View>
   );
 }
 
