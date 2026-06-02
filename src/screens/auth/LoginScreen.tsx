@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+} from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParams } from '../../navigation/AuthNavigator';
 import { supabase } from '../../lib/supabase';
 import { colors, spacing, typography, radius } from '../../constants/theme';
+import EtherealBackground from '../../components/ui/EtherealBackground';
 
 type Props = { navigation: StackNavigationProp<AuthStackParams, 'Login'> };
 
@@ -14,120 +26,286 @@ export default function LoginScreen({ navigation }: Props) {
   const [showPwd, setShowPwd]   = useState(false);
 
   const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      Alert.alert('Champs requis', 'Veuillez remplir email et mot de passe.');
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setLoading(false);
-    if (error) Alert.alert('Erreur', error.message);
+    if (error) Alert.alert('Erreur de connexion', error.message);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={s.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <TouchableOpacity style={s.back} onPress={() => navigation.goBack()}>
-        <Text style={s.backText}>← Retour</Text>
-      </TouchableOpacity>
+    <EtherealBackground intensity={0.18}>
+      <StatusBar barStyle="dark-content" />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={s.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Back */}
+          <TouchableOpacity style={s.back} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+            <Text style={s.backArrow}>←</Text>
+            <Text style={s.backText}>Accueil</Text>
+          </TouchableOpacity>
 
-      <View style={s.hero}>
-        <Text style={s.title}>Bon retour</Text>
-        <Text style={s.subtitle}>Connectez-vous à votre compte Nexart</Text>
-      </View>
+          {/* Brand */}
+          <View style={s.brand}>
+            <View style={s.logoMark}>
+              <View style={s.logoGrid}>
+                <View style={s.logoDot} />
+                <View style={s.logoDot} />
+                <View style={s.logoDot} />
+                <View style={s.logoDot} />
+              </View>
+            </View>
+            <Text style={s.brandName}>Nexart</Text>
+          </View>
 
-      <View style={s.form}>
-        <View style={s.inputWrap}>
-          <Text style={s.inputLabel}>Email</Text>
-          <TextInput
-            style={s.input}
-            placeholder="votre@email.fr"
-            placeholderTextColor={colors.text.secondary + '70'}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-          />
-        </View>
+          {/* Hero */}
+          <View style={s.hero}>
+            <Text style={s.title}>Bon retour !</Text>
+            <Text style={s.subtitle}>
+              Connectez-vous à votre compte Nexart.
+            </Text>
+          </View>
 
-        <View style={s.inputWrap}>
-          <Text style={s.inputLabel}>Mot de passe</Text>
-          <View style={s.pwdRow}>
-            <TextInput
-              style={[s.input, { flex: 1, marginBottom: 0 }]}
-              placeholder="••••••••"
-              placeholderTextColor={colors.text.secondary + '70'}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPwd}
-              autoComplete="password"
-              textContentType="password"
-            />
-            <TouchableOpacity style={s.pwdToggle} onPress={() => setShowPwd(v => !v)}>
-              <Text style={s.pwdToggleText}>{showPwd ? 'Cacher' : 'Voir'}</Text>
+          {/* Form */}
+          <View style={s.form}>
+            {/* Email */}
+            <View style={s.fieldWrap}>
+              <Text style={s.fieldLabel}>Adresse email</Text>
+              <TextInput
+                style={s.input}
+                placeholder="votre@email.fr"
+                placeholderTextColor={colors.text.secondary + '60'}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
+                returnKeyType="next"
+              />
+            </View>
+
+            {/* Password */}
+            <View style={s.fieldWrap}>
+              <Text style={s.fieldLabel}>Mot de passe</Text>
+              <View style={s.pwdRow}>
+                <TextInput
+                  style={[s.input, s.pwdInput]}
+                  placeholder="••••••••"
+                  placeholderTextColor={colors.text.secondary + '60'}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPwd}
+                  autoComplete="password"
+                  textContentType="password"
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                />
+                <TouchableOpacity style={s.eyeBtn} onPress={() => setShowPwd(v => !v)} activeOpacity={0.7}>
+                  <Text style={s.eyeText}>{showPwd ? 'Cacher' : 'Voir'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Submit */}
+            <TouchableOpacity
+              style={[s.btnPrimary, loading && s.btnLoading]}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              <Text style={s.btnPrimaryText}>
+                {loading ? 'Connexion…' : 'Se connecter'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={s.divider}>
+              <View style={s.dividerLine} />
+              <Text style={s.dividerText}>ou</Text>
+              <View style={s.dividerLine} />
+            </View>
+
+            {/* Register link */}
+            <TouchableOpacity
+              style={s.btnSecondary}
+              onPress={() => navigation.navigate('Register')}
+              activeOpacity={0.85}
+            >
+              <Text style={s.btnSecondaryText}>Créer un compte</Text>
             </TouchableOpacity>
           </View>
-        </View>
 
-        <TouchableOpacity
-          style={[s.btn, loading && s.btnLoading]}
-          onPress={handleLogin}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          <Text style={s.btnText}>{loading ? 'Connexion…' : 'Se connecter'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={s.link}>Pas encore de compte ? S'inscrire</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          {/* Terms */}
+          <Text style={s.terms}>
+            En continuant, vous acceptez nos{' '}
+            <Text style={s.termsLink}>Conditions d'utilisation</Text>
+            {' '}et notre{' '}
+            <Text style={s.termsLink}>Politique de confidentialité</Text>.
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </EtherealBackground>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.xl, paddingTop: spacing.xxl },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xl,
+  },
 
-  back:     { marginBottom: spacing.xl },
-  backText: { color: colors.text.secondary },
+  // Back
+  back: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.xl,
+  },
+  backArrow: { fontSize: 18, color: colors.text.secondary },
+  backText:  { ...typography.label, color: colors.text.secondary },
 
-  hero: { marginBottom: spacing.xl },
-  title:    { ...typography.h2, color: colors.text.primary, fontWeight: '700', marginBottom: spacing.xs },
-  subtitle: { ...typography.body, color: colors.text.secondary },
-
-  form: { gap: spacing.sm },
-
-  inputWrap:  { gap: spacing.xs },
-  inputLabel: { ...typography.caption, color: colors.text.secondary, marginLeft: 2, fontWeight: '500' },
-  input: {
-    backgroundColor: colors.surface,
+  // Brand
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  logoMark: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoGrid: {
+    width: 18,
+    height: 18,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 3,
+  },
+  logoDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  brandName: {
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.text.primary,
-    padding: spacing.md,
+    letterSpacing: -0.3,
+  },
+
+  // Hero
+  hero: { marginBottom: spacing.xl },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text.primary,
+    letterSpacing: -0.8,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    ...typography.body,
+    color: colors.text.secondary,
+  },
+
+  // Form
+  form: { gap: spacing.md },
+
+  fieldWrap: { gap: spacing.xs },
+  fieldLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    fontWeight: '600',
+    marginLeft: 2,
+    letterSpacing: 0.3,
+  },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    color: colors.text.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.border,
     fontSize: 15,
   },
 
-  pwdRow:       { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  pwdToggle:    { paddingHorizontal: spacing.md },
-  pwdToggleText:{ ...typography.caption, color: colors.primary },
+  pwdRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  pwdInput: { flex: 1, marginBottom: 0 },
+  eyeBtn:  { paddingHorizontal: spacing.sm, paddingVertical: spacing.sm },
+  eyeText: { ...typography.caption, color: colors.primary, fontWeight: '600' },
 
-  btn: {
+  btnPrimary: {
     backgroundColor: colors.primary,
     paddingVertical: 16,
     borderRadius: radius.xl,
     alignItems: 'center',
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
   },
-  btnLoading: { opacity: 0.7 },
-  btnText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '700' },
+  btnLoading:    { opacity: 0.65 },
+  btnPrimaryText: {
+    ...typography.label,
+    color: colors.text.inverse,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
 
-  link: { color: colors.secondary, textAlign: 'center', marginTop: spacing.md },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginVertical: spacing.xs,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: { ...typography.caption, color: colors.text.secondary },
+
+  btnSecondary: {
+    paddingVertical: 16,
+    borderRadius: radius.xl,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  btnSecondaryText: {
+    ...typography.label,
+    color: colors.text.primary,
+    fontSize: 16,
+  },
+
+  terms: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: spacing.xl,
+  },
+  termsLink: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
 });

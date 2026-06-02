@@ -76,6 +76,7 @@ export interface Application {
   event_id: string;
   creator_id: string;
   message: string | null;
+  refusal_reason: string | null;
   status: ApplicationStatus;
   stripe_payment_id: string | null;
   created_at: string;

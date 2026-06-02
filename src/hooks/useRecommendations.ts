@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Event, CreatorProfile } from '../types';
 import { haversineKm } from '../utils/geocode';
+import { DEMO_MODE, DEMO_EVENTS, DEMO_APPLICATIONS } from '../lib/demoData';
 
 // ─── For creators: score events ───────────────────────────────────────────────
 
@@ -36,6 +37,19 @@ export function useEventRecommendations(creatorProfile: CreatorProfile | null, l
 
   useEffect(() => {
     if (!creatorProfile) { setLoading(false); return; }
+
+    if (DEMO_MODE) {
+      const appliedIds = DEMO_APPLICATIONS.map(a => a.event_id);
+      const scored = (DEMO_EVENTS as unknown as Event[])
+        .map(e => ({ e, score: scoreEvent(e, creatorProfile, appliedIds) }))
+        .filter(x => x.score >= 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(x => x.e);
+      setEvents(scored);
+      setLoading(false);
+      return;
+    }
 
     Promise.all([
       supabase.from('events').select('*').eq('status', 'published')

@@ -210,7 +210,7 @@ export const DEMO_CREATORS = [
   },
 ];
 
-// ─── Applications ─────────────────────────────────────────
+// ─── Applications créateur (vu par le créateur) ──────────
 
 export const DEMO_APPLICATIONS = [
   {
@@ -219,7 +219,7 @@ export const DEMO_APPLICATIONS = [
     creator_id: 'demo-creator-1',
     message: 'Bonjour Claire, je suis tatoueuse fine line et j\'illustre aussi des tirages d\'art. Mon univers nature & japonisme devrait bien s\'inscrire dans votre marché. SIRET + RC Pro Maif.',
     status: 'accepted' as const,
-    stripe_payment_id: null,
+    stripe_payment_id: 'pi_demo_bastille',
     created_at: '2026-05-10T14:00:00Z',
     updated_at: '2026-05-12T09:00:00Z',
     event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille', city: 'Paris', start_date: '2026-06-07', end_date: '2026-06-29', cover_image: PHOTOS.marche1, organizer_id: 'demo-org-1' },
@@ -228,7 +228,7 @@ export const DEMO_APPLICATIONS = [
     id: 'demo-app-2',
     event_id: 'demo-event-2',
     creator_id: 'demo-creator-1',
-    message: 'Je candidate pour le Salon Design Lyon avec ma gamme de tirages d\'art et prints de tatouage.',
+    message: 'Je candidate pour le Salon Design Lyon avec ma gamme de tirages d\'art et prints de tatouage. Portfolio complet disponible sur demande.',
     status: 'pending' as const,
     stripe_payment_id: null,
     created_at: '2026-05-20T10:00:00Z',
@@ -241,6 +241,7 @@ export const DEMO_APPLICATIONS = [
     creator_id: 'demo-creator-1',
     message: 'Très intéressée par ce pop-up à Bordeaux. J\'ai de la famille là-bas et je connais bien la ville.',
     status: 'refused' as const,
+    refusal_reason: 'Nous privilégions les créateurs locaux de la région Nouvelle-Aquitaine pour cette édition. N\'hésitez pas à candidater pour nos prochains marchés parisiens !',
     stripe_payment_id: null,
     created_at: '2026-04-15T11:00:00Z',
     updated_at: '2026-04-20T16:00:00Z',
@@ -250,12 +251,186 @@ export const DEMO_APPLICATIONS = [
     id: 'demo-app-4',
     event_id: 'demo-event-4',
     creator_id: 'demo-creator-1',
-    message: 'Le Marché de Noël de Strasbourg correspond exactement à mon positionnement.',
+    message: 'Le Marché de Noël de Strasbourg correspond exactement à mon positionnement haut de gamme. Sélection d\'œuvres inédites pour l\'occasion.',
     status: 'pending' as const,
     stripe_payment_id: null,
     created_at: '2026-05-25T09:30:00Z',
     updated_at: '2026-05-25T09:30:00Z',
     event: { id: 'demo-event-4', title: 'Marché de Noël Strasbourg', city: 'Strasbourg', start_date: '2026-11-27', end_date: '2026-12-31', cover_image: PHOTOS.marche3, organizer_id: 'demo-org-2' },
+  },
+  {
+    id: 'demo-app-5',
+    event_id: 'demo-event-5',
+    creator_id: 'demo-creator-1',
+    message: 'Le marché Bio & Craft de Nantes correspond à mes valeurs. Je travaille avec des encres vegan et du papier recyclé pour mes tirages.',
+    status: 'accepted' as const,
+    stripe_payment_id: null,
+    created_at: '2026-05-28T16:00:00Z',
+    updated_at: '2026-05-30T10:00:00Z',
+    event: { id: 'demo-event-5', title: 'Marché Bio & Craft Nantes', city: 'Nantes', start_date: '2026-07-05', end_date: '2026-08-30', cover_image: PHOTOS.marche2, organizer_id: 'demo-org-1' },
+  },
+];
+
+// ─── Candidatures reçues (vu par l'organisateur) ─────────
+
+export const DEMO_ORGANIZER_APPLICATIONS = [
+  // ── Marché Bastille (demo-event-1) ──────────────────────
+  {
+    id: 'demo-org-app-1',
+    event_id: 'demo-event-1',
+    creator_id: 'demo-creator-1',
+    message: 'Bonjour Claire, je suis tatoueuse fine line et illustratrice. Mon univers nature & japonisme s\'intègre parfaitement à l\'esprit de votre marché. SIRET + RC Pro Maif. Portfolio disponible sur sophieleroux.fr.',
+    status: 'accepted' as const,
+    stripe_payment_id: 'pi_demo_bastille',
+    created_at: '2026-05-10T14:00:00Z',
+    updated_at: '2026-05-12T09:00:00Z',
+    creator: {
+      id: 'demo-creator-1',
+      full_name: 'Sophie Leroux',
+      avatar_url: PHOTOS.av1,
+      creator_profile: { disciplines: ['Tatouage', 'Illustration'], city: 'Paris' },
+    },
+    event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille' },
+  },
+  {
+    id: 'demo-org-app-2',
+    event_id: 'demo-event-1',
+    creator_id: 'demo-creator-2',
+    message: 'Bonjour, je propose une sélection de pièces en grès et porcelaine : bols, tasses et vases. Tout est fait à la main dans mon atelier de Montpellier. Je suis disponible tous les week-ends de juin.',
+    status: 'pending' as const,
+    stripe_payment_id: null,
+    created_at: '2026-05-15T09:00:00Z',
+    updated_at: '2026-05-15T09:00:00Z',
+    creator: {
+      id: 'demo-creator-2',
+      full_name: 'Marc Dumont',
+      avatar_url: PHOTOS.av2,
+      creator_profile: { disciplines: ['Céramique', 'Poterie'], city: 'Montpellier' },
+    },
+    event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille' },
+  },
+  {
+    id: 'demo-org-app-3',
+    event_id: 'demo-event-1',
+    creator_id: 'demo-creator-3',
+    message: 'Je suis joaillière créatrice spécialisée en or recyclé et pierres semi-précieuses éthiques. Ma nouvelle collection "Jardins" serait parfaite pour votre public. SIRET + RC Pro + assurance exposition.',
+    status: 'pending' as const,
+    stripe_payment_id: null,
+    created_at: '2026-05-16T11:30:00Z',
+    updated_at: '2026-05-16T11:30:00Z',
+    creator: {
+      id: 'demo-creator-3',
+      full_name: 'Isabelle Chen',
+      avatar_url: PHOTOS.av3,
+      creator_profile: { disciplines: ['Joaillerie', 'Bijoux'], city: 'Paris' },
+    },
+    event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille' },
+  },
+  {
+    id: 'demo-org-app-4',
+    event_id: 'demo-event-1',
+    creator_id: 'demo-creator-4',
+    message: 'Brodeur & designer textile basé à Bordeaux. Je propose des pièces uniques alliant techniques traditionnelles et motifs contemporains. Je peux partager mon stand avec un second créateur si nécessaire.',
+    status: 'pending' as const,
+    stripe_payment_id: null,
+    created_at: '2026-05-17T15:00:00Z',
+    updated_at: '2026-05-17T15:00:00Z',
+    creator: {
+      id: 'demo-creator-4',
+      full_name: 'Lucas Bernard',
+      avatar_url: PHOTOS.av4,
+      creator_profile: { disciplines: ['Broderie', 'Textile'], city: 'Bordeaux' },
+    },
+    event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille' },
+  },
+  {
+    id: 'demo-org-app-5',
+    event_id: 'demo-event-1',
+    creator_id: 'demo-creator-5',
+    message: 'Illustratrice et graveure à Lyon. Je propose des tirages d\'art en édition limitée, risographie sur papier recyclé. Ma série "Botanique" est disponible en plusieurs formats.',
+    status: 'refused' as const,
+    refusal_reason: 'Nous avons déjà sélectionné 3 illustrateurs pour cette édition et les emplacements sont complets. Votre travail est de grande qualité — repostulez en septembre !',
+    stripe_payment_id: null,
+    created_at: '2026-05-08T10:00:00Z',
+    updated_at: '2026-05-11T14:00:00Z',
+    creator: {
+      id: 'demo-creator-5',
+      full_name: 'Amélie Fontaine',
+      avatar_url: PHOTOS.av5,
+      creator_profile: { disciplines: ['Illustration', 'Gravure', 'Sérigraphie'], city: 'Lyon' },
+    },
+    event: { id: 'demo-event-1', title: 'Marché des Créateurs Bastille' },
+  },
+  // ── Salon Lyon (demo-event-2) ────────────────────────────
+  {
+    id: 'demo-org-app-6',
+    event_id: 'demo-event-2',
+    creator_id: 'demo-creator-3',
+    message: 'Je candidate pour le Salon Design Lyon avec ma nouvelle collection "Minuit" — or 18K, saphirs éthiques et argent oxydé. Ma clientèle est haut de gamme et j\'ai l\'habitude des salons professionnels.',
+    status: 'accepted' as const,
+    stripe_payment_id: 'pi_demo_lyon',
+    created_at: '2026-04-20T10:00:00Z',
+    updated_at: '2026-04-25T09:00:00Z',
+    creator: {
+      id: 'demo-creator-3',
+      full_name: 'Isabelle Chen',
+      avatar_url: PHOTOS.av3,
+      creator_profile: { disciplines: ['Joaillerie', 'Bijoux'], city: 'Paris' },
+    },
+    event: { id: 'demo-event-2', title: 'Salon du Design & Craft Lyon' },
+  },
+  {
+    id: 'demo-org-app-7',
+    event_id: 'demo-event-2',
+    creator_id: 'demo-creator-2',
+    message: 'Céramiste professionnel depuis 12 ans. Je travaille la porcelaine fine pour des pièces fonctionnelles et décoratives. Dossier complet sur demande (book, assurance, SIRET).',
+    status: 'pending' as const,
+    stripe_payment_id: null,
+    created_at: '2026-05-05T14:00:00Z',
+    updated_at: '2026-05-05T14:00:00Z',
+    creator: {
+      id: 'demo-creator-2',
+      full_name: 'Marc Dumont',
+      avatar_url: PHOTOS.av2,
+      creator_profile: { disciplines: ['Céramique', 'Poterie'], city: 'Montpellier' },
+    },
+    event: { id: 'demo-event-2', title: 'Salon du Design & Craft Lyon' },
+  },
+  // ── Pop-up Bordeaux (demo-event-3) ──────────────────────
+  {
+    id: 'demo-org-app-8',
+    event_id: 'demo-event-3',
+    creator_id: 'demo-creator-4',
+    message: 'Créateur local bordelais, broderie & textile. Ce pop-up correspond parfaitement à mon territoire. J\'ai déjà participé aux Chartrons l\'an dernier avec grand succès.',
+    status: 'accepted' as const,
+    stripe_payment_id: null,
+    created_at: '2026-04-01T09:00:00Z',
+    updated_at: '2026-04-05T11:00:00Z',
+    creator: {
+      id: 'demo-creator-4',
+      full_name: 'Lucas Bernard',
+      avatar_url: PHOTOS.av4,
+      creator_profile: { disciplines: ['Broderie', 'Textile'], city: 'Bordeaux' },
+    },
+    event: { id: 'demo-event-3', title: 'Pop-up Artisanat Bordeaux' },
+  },
+  {
+    id: 'demo-org-app-9',
+    event_id: 'demo-event-3',
+    creator_id: 'demo-creator-1',
+    message: 'Très intéressée par ce pop-up à Bordeaux. J\'ai de la famille là-bas et je connais bien la ville.',
+    status: 'refused' as const,
+    refusal_reason: 'Nous privilégions les créateurs locaux de la région Nouvelle-Aquitaine pour cette édition. N\'hésitez pas à candidater pour nos prochains marchés parisiens !',
+    stripe_payment_id: null,
+    created_at: '2026-04-15T11:00:00Z',
+    updated_at: '2026-04-20T16:00:00Z',
+    creator: {
+      id: 'demo-creator-1',
+      full_name: 'Sophie Leroux',
+      avatar_url: PHOTOS.av1,
+      creator_profile: { disciplines: ['Tatouage', 'Illustration'], city: 'Paris' },
+    },
+    event: { id: 'demo-event-3', title: 'Pop-up Artisanat Bordeaux' },
   },
 ];
 
@@ -390,6 +565,25 @@ export const DEMO_POSTS = [
     creator: { id: 'demo-creator-5', full_name: 'Amélie Fontaine', avatar_url: PHOTOS.av5 },
   },
 ];
+
+// ─── Profil créateur demo (pour useCreatorProfile) ───────
+
+export const DEMO_CREATOR_PROFILE = {
+  id: 'demo-cp-1',
+  user_id: 'dev-creator-id',
+  disciplines: ['Tatouage', 'Illustration'],
+  city: 'Paris',
+  region: 'Île-de-France',
+  department: '75',
+  travel_radius: 'national' as const,
+  portfolio_images: [PHOTOS.tat1, PHOTOS.tat2, PHOTOS.tat3],
+  website: 'https://sophieleroux.fr',
+  instagram: '@sophie_leroux_tattoo',
+  etsy: null,
+  siret_verified: true,
+  insurance_verified: true,
+  availability: { weekends: true, custom: [] },
+};
 
 // ─── Organisateurs ────────────────────────────────────────
 

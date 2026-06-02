@@ -130,6 +130,15 @@ function ApplicationCard({ item, userId }: { item: any; userId: string }) {
           <Text style={s.messageText} numberOfLines={2}>{item.message}</Text>
         </View>
       )}
+      {item.status === 'refused' && item.refusal_reason && (
+        <View style={s.refusalBox}>
+          <View style={s.refusalHeader}>
+            <Text style={s.refusalIcon}>✕</Text>
+            <Text style={s.refusalLabel}>Motif du refus</Text>
+          </View>
+          <Text style={s.refusalText}>{item.refusal_reason}</Text>
+        </View>
+      )}
       {item.status === 'accepted' && (
         <View style={s.actionRow}>
           <TouchableOpacity style={s.btnMsg} onPress={openChat}>
@@ -231,9 +240,14 @@ const s = StyleSheet.create({
   appliedDate: { ...typography.caption, color: colors.text.secondary + '99' },
   statusBadge: { borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 4, alignSelf: 'flex-start' },
   statusText: { ...typography.caption, fontWeight: '700' },
-  messageBox: { marginHorizontal: spacing.lg, marginBottom: spacing.lg, backgroundColor: colors.background, borderRadius: radius.md, padding: spacing.sm, borderLeftWidth: 2, borderColor: colors.primary + '50' },
+  messageBox: { marginHorizontal: spacing.lg, marginBottom: spacing.md, backgroundColor: colors.background, borderRadius: radius.md, padding: spacing.sm, borderLeftWidth: 2, borderColor: colors.primary + '50' },
   messageLabel: { ...typography.caption, color: colors.text.secondary, marginBottom: 2 },
   messageText: { ...typography.caption, color: colors.text.primary, lineHeight: 18 },
+  refusalBox: { marginHorizontal: spacing.lg, marginBottom: spacing.lg, backgroundColor: colors.error + '08', borderRadius: radius.md, padding: spacing.md, borderWidth: 1, borderColor: colors.error + '30' },
+  refusalHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+  refusalIcon: { fontSize: 11, color: colors.error, fontWeight: '700' },
+  refusalLabel: { ...typography.caption, color: colors.error, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  refusalText: { ...typography.caption, color: colors.text.primary, lineHeight: 18 },
   actionRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
   btnMsg: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primary, alignItems: 'center' },
   btnMsgText: { ...typography.caption, color: colors.primary, fontWeight: '600' },

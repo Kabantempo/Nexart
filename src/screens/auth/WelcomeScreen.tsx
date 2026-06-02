@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParams } from '../../navigation/AuthNavigator';
 import { useAuth } from '../../stores/auth';
@@ -7,7 +13,9 @@ import { Profile } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 import EtherealBackground from '../../components/ui/EtherealBackground';
 
-type Props = { navigation: StackNavigationProp<AuthStackParams, 'Welcome'> & { getParent: () => any } };
+type Props = {
+  navigation: StackNavigationProp<AuthStackParams, 'Welcome'> & { getParent: () => any };
+};
 
 const MOCK_CREATOR: Profile = {
   id: 'dev-creator-id', role: 'creator', full_name: 'Alice Dupont (test)',
@@ -27,19 +35,28 @@ export default function WelcomeScreen({ navigation }: Props) {
 
   return (
     <EtherealBackground intensity={0.22}>
-      <View style={s.inner}>
+      <StatusBar barStyle="dark-content" />
+
+      <View style={s.container}>
+
+        {/* Brand header */}
+        <View style={s.header}>
+          <View style={s.logoMark}>
+            <View style={s.logoGrid}>
+              <View style={s.logoDot} />
+              <View style={s.logoDot} />
+              <View style={s.logoDot} />
+              <View style={s.logoDot} />
+            </View>
+          </View>
+          <Text style={s.brandName}>Nexart</Text>
+        </View>
 
         {/* Hero */}
         <View style={s.hero}>
-          <View style={s.logoWrap}>
-            <View style={s.logoDivider} />
-            <Text style={s.logo}>Nexart</Text>
-            <View style={s.logoDivider} />
-          </View>
-
-          <Text style={s.tagline}>La plateforme des marchés artisanaux</Text>
-          <Text style={s.sub}>
-            Connectez créateurs et organisateurs.{'\n'}Trouvez votre prochain marché.
+          <Text style={s.title}>Connexion ou{'\n'}inscription</Text>
+          <Text style={s.subtitle}>
+            La plateforme qui connecte créateurs artisanaux et organisateurs de marchés en France.
           </Text>
 
           <View style={s.pillRow}>
@@ -55,27 +72,35 @@ export default function WelcomeScreen({ navigation }: Props) {
         <View style={s.actions}>
           <TouchableOpacity
             style={s.btnPrimary}
-            onPress={() => navigation.navigate('Register')}
+            onPress={() => navigation.navigate('Login')}
             activeOpacity={0.85}
           >
-            <Text style={s.btnPrimaryText}>Créer un compte</Text>
+            <Text style={s.btnPrimaryIcon}>✉</Text>
+            <Text style={s.btnPrimaryText}>Se connecter par email</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={s.btnSecondary}
-            onPress={() => navigation.navigate('Login')}
+            onPress={() => navigation.navigate('Register')}
             activeOpacity={0.85}
           >
-            <Text style={s.btnSecondaryText}>Se connecter</Text>
+            <Text style={s.btnSecondaryText}>Créer un compte</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={s.btnExplore}
+            style={s.btnGhost}
             onPress={() => (navigation as any).getParent()?.navigate('Discover')}
-            activeOpacity={0.85}
+            activeOpacity={0.7}
           >
-            <Text style={s.btnExploreText}>Explorer sans compte →</Text>
+            <Text style={s.btnGhostText}>Explorer sans compte →</Text>
           </TouchableOpacity>
+
+          <Text style={s.terms}>
+            En continuant, vous acceptez nos{' '}
+            <Text style={s.termsLink}>Conditions d'utilisation</Text>
+            {' '}et notre{' '}
+            <Text style={s.termsLink}>Politique de confidentialité</Text>.
+          </Text>
 
           {__DEV__ && (
             <View style={s.devSection}>
@@ -100,67 +125,175 @@ export default function WelcomeScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  inner: { flex: 1, paddingHorizontal: spacing.xl },
+  container: {
+    flex: 1,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl + spacing.md,
+    paddingBottom: spacing.xl,
+  },
+
+  // Brand header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  logoMark: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoGrid: {
+    width: 18,
+    height: 18,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 3,
+  },
+  logoDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  brandName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text.primary,
+    letterSpacing: -0.3,
+  },
 
   // Hero
-  hero: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: spacing.xl },
-  logoWrap: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg },
-  logoDivider: { height: 1.5, width: 28, backgroundColor: colors.primary + '80' },
-  logo: { fontSize: 54, fontWeight: '700', color: colors.primary, letterSpacing: -1 },
-
-  tagline: {
-    ...typography.h3, color: colors.text.primary,
-    textAlign: 'center', marginBottom: spacing.sm, fontWeight: '600',
+  hero: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: spacing.xl,
   },
-  sub: {
-    ...typography.body, color: colors.text.secondary,
-    textAlign: 'center', lineHeight: 22, marginBottom: spacing.xl,
+  title: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: colors.text.primary,
+    letterSpacing: -1,
+    lineHeight: 42,
+    marginBottom: spacing.md,
   },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, justifyContent: 'center' },
+  subtitle: {
+    ...typography.body,
+    color: colors.text.secondary,
+    lineHeight: 24,
+    marginBottom: spacing.xl,
+    maxWidth: 320,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
   pill: {
-    paddingHorizontal: spacing.md, paddingVertical: 5,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
     borderRadius: radius.full,
     backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1, borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  pillText: { ...typography.caption, color: colors.text.secondary },
+  pillText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
 
   // Actions
-  actions: { gap: spacing.sm, paddingBottom: spacing.xxl },
+  actions: {
+    gap: spacing.sm,
+  },
 
   btnPrimary: {
     backgroundColor: colors.primary,
-    paddingVertical: 16, borderRadius: radius.xl,
+    paddingVertical: 16,
+    borderRadius: radius.xl,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.35,
     shadowRadius: 14,
     elevation: 8,
   },
-  btnPrimaryText: { ...typography.label, color: colors.text.inverse, fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  btnPrimaryIcon: {
+    fontSize: 16,
+    color: colors.text.inverse,
+  },
+  btnPrimaryText: {
+    ...typography.label,
+    color: colors.text.inverse,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
 
   btnSecondary: {
-    paddingVertical: 16, borderRadius: radius.xl,
+    paddingVertical: 16,
+    borderRadius: radius.xl,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  btnSecondaryText: { ...typography.label, color: colors.text.primary, fontSize: 16 },
+  btnSecondaryText: {
+    ...typography.label,
+    color: colors.text.primary,
+    fontSize: 16,
+  },
 
-  btnExplore: { paddingVertical: 12, alignItems: 'center' },
-  btnExploreText: { ...typography.label, color: colors.primary, fontSize: 15 },
+  btnGhost: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  btnGhostText: {
+    ...typography.label,
+    color: colors.primary,
+    fontSize: 15,
+  },
+
+  terms: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: spacing.xs,
+  },
+  termsLink: {
+    color: colors.primary,
+    textDecorationLine: 'underline',
+  },
 
   // Dev
   devSection: {
-    marginTop: spacing.sm, borderTopWidth: 1, borderColor: colors.border + '80',
+    marginTop: spacing.sm,
+    borderTopWidth: 1,
+    borderColor: colors.border + '80',
     paddingTop: spacing.md,
   },
-  devLabel: { ...typography.caption, color: colors.text.secondary, textAlign: 'center', marginBottom: spacing.sm },
-  devRow:   { flexDirection: 'row', gap: spacing.sm },
+  devLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  devRow: { flexDirection: 'row', gap: spacing.sm },
   devBtn: {
-    flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md,
-    backgroundColor: 'rgba(255,255,255,0.7)', borderWidth: 1, borderColor: colors.primary + '40',
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 1,
+    borderColor: colors.primary + '40',
     alignItems: 'center',
   },
   devBtnAlt:     { borderColor: colors.secondary + '40' },

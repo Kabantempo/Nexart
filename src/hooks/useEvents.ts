@@ -21,6 +21,20 @@ export function useEvents(options: UseEventsOptions = {}) {
     setLoading(true);
     setError(null);
 
+    if (DEMO_MODE) {
+      const demo = organizerId
+        ? DEMO_EVENTS.filter(e => e.organizer_id === organizerId)
+        : DEMO_EVENTS;
+      let filtered = demo as unknown as Event[];
+      if (region) filtered = filtered.filter(e => e.region === region);
+      if (disciplineTags?.length) filtered = filtered.filter(e =>
+        e.discipline_tags.some(t => disciplineTags.includes(t)),
+      );
+      setEvents(filtered.slice(0, limit));
+      setLoading(false);
+      return;
+    }
+
     let query = supabase
       .from('events')
       .select('*')
@@ -39,17 +53,7 @@ export function useEvents(options: UseEventsOptions = {}) {
 
     const { data, error: err } = await query;
     if (err) setError(err.message);
-    else {
-      const real = data ?? [];
-      if (DEMO_MODE && real.length === 0) {
-        const demo = organizerId
-          ? DEMO_EVENTS.filter(e => e.organizer_id === organizerId)
-          : DEMO_EVENTS;
-        setEvents(demo.slice(0, limit) as unknown as Event[]);
-      } else {
-        setEvents(real);
-      }
-    }
+    else setEvents(data ?? []);
     setLoading(false);
   }, [limit, region, disciplineTags, organizerId]);
 

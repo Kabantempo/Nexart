@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { CreatorProfile } from '../types';
 import { geocodeCity } from '../utils/geocode';
+import { DEMO_MODE, DEMO_CREATOR_PROFILE } from '../lib/demoData';
 
 export function useCreatorProfile(userId: string | undefined) {
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
@@ -12,6 +13,13 @@ export function useCreatorProfile(userId: string | undefined) {
   const fetch = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
+
+    if (DEMO_MODE) {
+      setCreatorProfile({ ...DEMO_CREATOR_PROFILE, user_id: userId } as unknown as CreatorProfile);
+      setLoading(false);
+      return;
+    }
+
     const { data, error: err } = await supabase
       .from('creator_profiles')
       .select('*')

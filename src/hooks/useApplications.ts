@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Application, ApplicationStatus } from '../types';
 import { getPushTokenForUser, sendPushNotification } from './usePushNotifications';
-import { DEMO_MODE, DEMO_APPLICATIONS } from '../lib/demoData';
+import { DEMO_MODE, DEMO_APPLICATIONS, DEMO_ORGANIZER_APPLICATIONS } from '../lib/demoData';
 
 interface ApplicationWithEvent extends Application {
   event: { id: string; title: string; city: string | null; start_date: string; end_date: string | null; cover_image: string | null; organizer_id: string };
@@ -21,6 +21,13 @@ export function useCreatorApplications(creatorId: string | undefined) {
   const fetch = useCallback(async () => {
     if (!creatorId) return;
     setLoading(true);
+
+    if (DEMO_MODE) {
+      setApplications(DEMO_APPLICATIONS as unknown as ApplicationWithEvent[]);
+      setLoading(false);
+      return;
+    }
+
     const { data, error: err } = await supabase
       .from('applications')
       .select('*, event:events(id, title, city, start_date, end_date, cover_image, organizer_id)')
@@ -29,11 +36,7 @@ export function useCreatorApplications(creatorId: string | undefined) {
       .limit(20);
 
     if (err) setError(err.message);
-    else {
-      const real = (data as ApplicationWithEvent[]) ?? [];
-      if (DEMO_MODE && real.length === 0) setApplications(DEMO_APPLICATIONS as unknown as ApplicationWithEvent[]);
-      else setApplications(real);
-    }
+    else setApplications((data as ApplicationWithEvent[]) ?? []);
     setLoading(false);
   }, [creatorId]);
 
@@ -49,6 +52,16 @@ export function useOrganizerApplications(eventId?: string) {
 
   const fetch = useCallback(async () => {
     setLoading(true);
+
+    if (DEMO_MODE) {
+      const demo = eventId
+        ? DEMO_ORGANIZER_APPLICATIONS.filter(a => a.event_id === eventId)
+        : DEMO_ORGANIZER_APPLICATIONS;
+      setApplications(demo as unknown as ApplicationWithCreator[]);
+      setLoading(false);
+      return;
+    }
+
     let query = supabase
       .from('applications')
       .select('*, creator:profiles(id, full_name, avatar_url), event:events(id, title)')
