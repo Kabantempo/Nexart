@@ -8,7 +8,10 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_ENV": "development"
+        "APP_ENV": "development",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cvqeysnymnkfxfithhsr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Q59WmYgpYsdmW2pPRF6sfA_g2inbZei",
+        "EXPO_PUBLIC_STRIPE_KEY": "pk_test_51TdaRtKDEmqiiECwJJNw9saXNm6F7zHnWWhqX3xRhp2u3AIuztIf1CkdEKW5fzd1FX8b4nGWrIjS9BKqHGOnCDSs00MvSr9LLb"
       }
     },
     "preview": {
@@ -17,13 +20,19 @@
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "preview"
+        "APP_ENV": "preview",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cvqeysnymnkfxfithhsr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Q59WmYgpYsdmW2pPRF6sfA_g2inbZei",
+        "EXPO_PUBLIC_STRIPE_KEY": "pk_test_51TdaRtKDEmqiiECwJJNw9saXNm6F7zHnWWhqX3xRhp2u3AIuztIf1CkdEKW5fzd1FX8b4nGWrIjS9BKqHGOnCDSs00MvSr9LLb"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://cvqeysnymnkfxfithhsr.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Q59WmYgpYsdmW2pPRF6sfA_g2inbZei",
+        "EXPO_PUBLIC_STRIPE_KEY": "pk_test_51TdaRtKDEmqiiECwJJNw9saXNm6F7zHnWWhqX3xRhp2u3AIuztIf1CkdEKW5fzd1FX8b4nGWrIjS9BKqHGOnCDSs00MvSr9LLb"
       }
     }
   },
