@@ -26,6 +26,7 @@ interface ApplicationItem {
   status: ApplicationStatus;
   message: string | null;
   refusal_reason: string | null;
+  stripe_payment_id: string | null;
   created_at: string;
   creator: {
     id: string;
@@ -265,7 +266,7 @@ function ReviewModal({
 
 function ApplicationCard({
   item, eventId, organizerId, eventTitle,
-  onDecide, onOpenConversation,
+  onDecide, onOpenConversation, onConfirmPayment,
 }: {
   item: ApplicationItem;
   eventId: string;
@@ -273,6 +274,7 @@ function ApplicationCard({
   eventTitle: string;
   onDecide: (id: string, status: ApplicationStatus) => void;
   onOpenConversation: (creatorId: string, creatorName: string) => void;
+  onConfirmPayment?: (applicationId: string) => void;
 }) {
   const cfg = STATUS_CONFIG[item.status];
   const disciplines = item.creator?.creator_profile?.disciplines ?? [];
@@ -377,6 +379,14 @@ function ApplicationCard({
           <TouchableOpacity style={styles.btnMsg} onPress={() => onOpenConversation(item.creator.id, item.creator.full_name)}>
             <Text style={styles.btnMsgText}>💬 Message</Text>
           </TouchableOpacity>
+          {onConfirmPayment && item.stripe_payment_id?.startsWith('pending_') && (
+            <TouchableOpacity style={styles.btnConfirmPay} onPress={() => onConfirmPayment(item.id)}>
+              <Text style={styles.btnConfirmPayText}>✓ Paiement reçu</Text>
+            </TouchableOpacity>
+          )}
+          {item.stripe_payment_id && !item.stripe_payment_id.startsWith('pending_') && (
+            <View style={styles.paidBadge}><Text style={styles.paidBadgeText}>💳 Payé</Text></View>
+          )}
           {hasReviewed === false && (
             <TouchableOpacity style={styles.btnReview} onPress={() => setShowReview(true)}>
               <Text style={styles.btnReviewText}>★ Évaluer</Text>
@@ -452,7 +462,7 @@ export default function EventApplicationsScreen({ navigation, route }: Props) {
     const { data } = await supabase
       .from('applications')
       .select(`
-        id, status, message, created_at,
+        id, status, message, refusal_reason, created_at,
         creator:profiles!creator_id (
           id, full_name, avatar_url,
           creator_profile:creator_profiles (disciplines, city)
@@ -549,6 +559,25 @@ export default function EventApplicationsScreen({ navigation, route }: Props) {
     }
   };
 
+  const handleConfirmPayment = async (applicationId: string) => {
+    Alert.alert(
+      'Confirmer le paiement ?',
+      'Le créateur sera notifié que son paiement a été validé.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Confirmer', onPress: async () => {
+            await supabase
+              .from('applications')
+              .update({ stripe_payment_id: `confirmed_${Date.now()}` })
+              .eq('id', applicationId);
+            fetchApplications();
+          },
+        },
+      ],
+    );
+  };
+
   const handleOpenConversation = async (creatorId: string, creatorName: string) => {
     if (!profile?.id) return;
     const convId = await getOrCreateConversation(eventId, creatorId, profile.id);
@@ -624,6 +653,7 @@ export default function EventApplicationsScreen({ navigation, route }: Props) {
               eventTitle={eventTitle}
               onDecide={handleDecide}
               onOpenConversation={handleOpenConversation}
+              onConfirmPayment={handleConfirmPayment}
             />
           )}
           contentContainerStyle={styles.list}
@@ -705,6 +735,10 @@ const styles = StyleSheet.create({
   btnReviewText: { ...typography.caption, color: colors.secondary, fontWeight: '600' },
   reviewedBadge: { flex: 1, paddingVertical: spacing.sm, alignItems: 'center' },
   reviewedText: { ...typography.caption, color: colors.text.secondary },
+  btnConfirmPay: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.success, alignItems: 'center' },
+  btnConfirmPayText: { ...typography.caption, color: colors.text.inverse, fontWeight: '700' },
+  paidBadge: { flex: 1, paddingVertical: spacing.sm, alignItems: 'center', borderRadius: radius.md, backgroundColor: colors.success + '15', borderWidth: 1, borderColor: colors.success + '40' },
+  paidBadgeText: { ...typography.caption, color: colors.success, fontWeight: '600' },
   empty: { alignItems: 'center', paddingTop: spacing.xxl },
   emptyTitle: { ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs },
   emptySubtitle: { ...typography.body, color: colors.text.secondary },

@@ -15,7 +15,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "fr.nexart.app",
-      "associatedDomains": ["applinks:nexart.app"]
+      "associatedDomains": [
+        "applinks:nexart.app"
+      ]
     },
     "android": {
       "package": "fr.nexart.app",
@@ -31,11 +33,26 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "nexart.app", "pathPrefix": "/event" },
-            { "scheme": "https", "host": "nexart.app", "pathPrefix": "/creator" },
-            { "scheme": "https", "host": "nexart.app", "pathPrefix": "/discover" }
+            {
+              "scheme": "https",
+              "host": "nexart.app",
+              "pathPrefix": "/event"
+            },
+            {
+              "scheme": "https",
+              "host": "nexart.app",
+              "pathPrefix": "/creator"
+            },
+            {
+              "scheme": "https",
+              "host": "nexart.app",
+              "pathPrefix": "/discover"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -44,8 +61,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "REMPLACER-PAR-VOTRE-EAS-PROJECT-ID"
+        "projectId": "69b28ef6-b967-4914-ac62-6215b62e8fe6"
       }
-    }
+    },
+    "owner": "kaban13"
   }
 }

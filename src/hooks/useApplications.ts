@@ -30,7 +30,7 @@ export function useCreatorApplications(creatorId: string | undefined) {
 
     const { data, error: err } = await supabase
       .from('applications')
-      .select('*, event:events(id, title, city, start_date, end_date, cover_image, organizer_id)')
+      .select('*, event:events(id, title, city, start_date, end_date, cover_image, organizer_id, stripe_enabled, stand_price)')
       .eq('creator_id', creatorId)
       .order('created_at', { ascending: false })
       .limit(20);

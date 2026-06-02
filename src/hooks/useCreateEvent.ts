@@ -19,6 +19,7 @@ export interface EventFormData {
   stand_dimensions: string;
   discipline_tags: string[];
   rules: string;
+  stripe_enabled: boolean;
 }
 
 export const EMPTY_FORM: EventFormData = {
@@ -37,6 +38,7 @@ export const EMPTY_FORM: EventFormData = {
   stand_dimensions: '',
   discipline_tags: [],
   rules: '',
+  stripe_enabled: false,
 };
 
 export function useCreateEvent() {
@@ -84,6 +86,7 @@ export function useCreateEvent() {
       stand_dimensions: form.stand_dimensions.trim() || null,
       discipline_tags:  form.discipline_tags,
       rules:            form.rules.trim() || null,
+      stripe_enabled:   form.stripe_enabled,
       status,
     };
 

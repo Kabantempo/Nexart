@@ -1,13 +1,38 @@
 import React, { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput, Modal, Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../stores/auth';
 import { useCreatorApplications } from '../../hooks/useApplications';
 import { getOrCreateConversation } from '../../hooks/useConversations';
 import { submitReview, useHasReviewed } from '../../hooks/useReviews';
+import { supabase } from '../../lib/supabase';
 import { ApplicationStatus, CREATOR_REVIEW_TAGS } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
+
+async function createCheckoutSession(applicationId: string, eventTitle: string, standPrice: number): Promise<{ url: string | null; error: string | null }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { url: null, error: 'Non connecté' };
+  try {
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ application_id: applicationId, event_title: eventTitle, stand_price: standPrice }),
+      },
+    );
+    const data = await res.json();
+    if (data.error) return { url: null, error: data.error };
+    return { url: data.url, error: null };
+  } catch (e: any) {
+    return { url: null, error: e.message };
+  }
+}
 
 const FILTERS: { label: string; value: ApplicationStatus | 'all' }[] = [
   { label: 'Toutes', value: 'all' },
@@ -80,8 +105,25 @@ function ApplicationCard({ item, userId }: { item: any; userId: string }) {
   const isPast = event?.end_date && new Date(event.end_date) < new Date();
   const hasReviewed = useHasReviewed(event?.id ?? '', userId);
   const [showReview, setShowReview] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   const organizerId = event?.organizer_id ?? '';
+
+  const isPaid    = !!item.stripe_payment_id && !item.stripe_payment_id.startsWith('pending_');
+  const isPending = item.stripe_payment_id?.startsWith('pending_') ?? false;
+  const needsPayment = item.status === 'accepted'
+    && event?.stripe_enabled
+    && (event?.stand_price ?? 0) > 0
+    && !isPaid;
+
+  const handlePay = async () => {
+    if (!event?.stand_price) return;
+    setPaying(true);
+    const { url, error } = await createCheckoutSession(item.id, event.title, event.stand_price);
+    setPaying(false);
+    if (error || !url) { Alert.alert('Erreur', error ?? 'Impossible de créer la session de paiement'); return; }
+    Linking.openURL(url);
+  };
 
   const openChat = async () => {
     if (!event?.id || !userId || !organizerId) return;
@@ -144,6 +186,24 @@ function ApplicationCard({ item, userId }: { item: any; userId: string }) {
           <TouchableOpacity style={s.btnMsg} onPress={openChat}>
             <Text style={s.btnMsgText}>💬 Message</Text>
           </TouchableOpacity>
+          {needsPayment && !isPending && (
+            <TouchableOpacity style={[s.btnPay, paying && { opacity: 0.6 }]} onPress={handlePay} disabled={paying}>
+              <Ionicons name="card-outline" size={13} color={colors.text.inverse} />
+              <Text style={s.btnPayText}>{paying ? '…' : `Payer ${event.stand_price} €`}</Text>
+            </TouchableOpacity>
+          )}
+          {isPending && (
+            <View style={s.badgePending}>
+              <Ionicons name="time-outline" size={12} color={colors.text.secondary} />
+              <Text style={s.badgePendingText}>Paiement en attente</Text>
+            </View>
+          )}
+          {isPaid && (
+            <View style={s.badgePaid}>
+              <Ionicons name="checkmark-circle" size={12} color={colors.success} />
+              <Text style={s.badgePaidText}>Stand payé</Text>
+            </View>
+          )}
           {isPast && hasReviewed === false && (
             <TouchableOpacity style={s.btnReview} onPress={() => setShowReview(true)}>
               <Text style={s.btnReviewText}>★ Évaluer</Text>
@@ -251,6 +311,12 @@ const s = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
   btnMsg: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primary, alignItems: 'center' },
   btnMsgText: { ...typography.caption, color: colors.primary, fontWeight: '600' },
+  btnPay: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.success },
+  btnPayText: { ...typography.caption, color: colors.text.inverse, fontWeight: '700' },
+  badgePending: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.muted, borderWidth: 1, borderColor: colors.border },
+  badgePendingText: { ...typography.caption, color: colors.text.secondary },
+  badgePaid: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.success + '15', borderWidth: 1, borderColor: colors.success + '40' },
+  badgePaidText: { ...typography.caption, color: colors.success, fontWeight: '600' },
   btnReview: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.md, borderWidth: 1, borderColor: colors.secondary, alignItems: 'center' },
   btnReviewText: { ...typography.caption, color: colors.secondary, fontWeight: '600' },
   reviewedBadge: { flex: 1, paddingVertical: spacing.sm, alignItems: 'center' },

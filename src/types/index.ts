@@ -26,7 +26,9 @@ export interface CreatorProfile {
   website: string | null;
   instagram: string | null;
   etsy: string | null;
+  siret: string | null;
   siret_verified: boolean;
+  insurance_doc_url: string | null;
   insurance_verified: boolean;
   availability: {
     weekends: boolean;

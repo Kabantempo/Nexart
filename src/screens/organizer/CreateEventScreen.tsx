@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, ScrollView,
-  TouchableOpacity, Alert, ActivityIndicator,
+  TouchableOpacity, Alert, ActivityIndicator, Switch,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../stores/auth';
 import { useCreateEvent, EMPTY_FORM, EventFormData } from '../../hooks/useCreateEvent';
 import { DISCIPLINE_TAGS, EventType } from '../../types';
@@ -173,6 +174,35 @@ export default function CreateEventScreen() {
       {/* Règlement */}
       <Field label="Règlement" hint="(optionnel)" value={form.rules} onChange={set('rules')} placeholder="Commission, assurance requise, setup…" multiline />
 
+      {/* Paiement en ligne */}
+      <Text style={styles.sectionTitle}>Paiement en ligne</Text>
+      <View style={styles.stripeCard}>
+        <View style={styles.stripeRow}>
+          <View style={styles.stripeIconWrap}>
+            <Ionicons name="card-outline" size={20} color={form.stripe_enabled ? colors.primary : colors.text.secondary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.stripeLabel}>Activer le paiement Stripe</Text>
+            <Text style={styles.stripeSub}>Le créateur paie son stand en ligne à la validation</Text>
+          </View>
+          <Switch
+            value={form.stripe_enabled}
+            onValueChange={v => setForm(f => ({ ...f, stripe_enabled: v }))}
+            trackColor={{ false: colors.border, true: colors.primary + '60' }}
+            thumbColor={form.stripe_enabled ? colors.primary : colors.text.secondary}
+          />
+        </View>
+        {form.stripe_enabled && (
+          <View style={styles.stripeInfo}>
+            <Ionicons name="information-circle-outline" size={14} color={colors.primary} />
+            <Text style={styles.stripeInfoText}>
+              Le montant facturé sera le prix du stand renseigné ci-dessus ({form.stand_price || '0'} €).
+              Assurez-vous que votre compte Stripe est actif.
+            </Text>
+          </View>
+        )}
+      </View>
+
       {/* Actions */}
       <View style={styles.actions}>
         <TouchableOpacity
@@ -237,6 +267,26 @@ const styles = StyleSheet.create({
   tagText: { ...typography.caption, color: colors.text.secondary },
   tagTextActive: { color: colors.text.inverse, fontWeight: '600' },
   selectedCount: { ...typography.caption, color: colors.primary, marginTop: spacing.sm },
+
+  stripeCard: {
+    backgroundColor: colors.surface, borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md, marginTop: spacing.sm,
+  },
+  stripeRow:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  stripeIconWrap: {
+    width: 36, height: 36, borderRadius: radius.sm,
+    backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  stripeLabel: { ...typography.label, color: colors.text.primary, fontWeight: '600' },
+  stripeSub:   { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
+  stripeInfo: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs,
+    marginTop: spacing.md, backgroundColor: colors.primary + '10',
+    borderRadius: radius.sm, padding: spacing.sm,
+  },
+  stripeInfoText: { ...typography.caption, color: colors.primary, flex: 1, lineHeight: 16 },
 
   actions: { gap: spacing.sm, marginTop: spacing.xxl },
   btnDraft: {

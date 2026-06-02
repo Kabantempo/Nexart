@@ -246,3 +246,21 @@ CREATE POLICY "event_media_insert" ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'event-media' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "event_media_delete" ON storage.objects FOR DELETE
   USING (bucket_id = 'event-media' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+-- MIGRATION : vérification SIRET / Assurance
+-- À exécuter dans Supabase Dashboard > SQL Editor
+
+ALTER TABLE creator_profiles
+  ADD COLUMN IF NOT EXISTS siret text,
+  ADD COLUMN IF NOT EXISTS insurance_doc_url text;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('insurance-docs', 'insurance-docs', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "insurance_insert" ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'insurance-docs' AND auth.uid()::text = (storage.foldername(name))[1]);
+CREATE POLICY "insurance_select" ON storage.objects FOR SELECT
+  USING (bucket_id = 'insurance-docs');
+CREATE POLICY "insurance_update" ON storage.objects FOR UPDATE
+  USING (bucket_id = 'insurance-docs' AND auth.uid()::text = (storage.foldername(name))[1]);

@@ -14,7 +14,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../stores/auth';
 import { useCreatorProfile } from '../../hooks/useCreatorProfile';
 import { useProfileReviews } from '../../hooks/useReviews';
-import { DISCIPLINE_TAGS, TravelRadius } from '../../types';
+import { CreatorProfile, DISCIPLINE_TAGS, TravelRadius } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 const RADIUS_OPTIONS: { label: string; value: TravelRadius }[] = [
@@ -140,6 +140,351 @@ const porto = StyleSheet.create({
   img: { width: IMG_SIZE, height: IMG_SIZE, borderRadius: radius.sm, backgroundColor: colors.surface },
 });
 
+// ─── Availability section ────────────────────────────────────────────────────
+
+const MONTHS_FR = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+function formatPeriodDate(iso: string) {
+  const [, m, d] = iso.split('-');
+  return `${parseInt(d, 10)} ${MONTHS_FR[parseInt(m, 10) - 1]}`;
+}
+
+const DEFAULT_AVAIL: CreatorProfile['availability'] = { weekends: false, custom: [] };
+
+function AvailabilitySection({
+  value,
+  onChange,
+}: {
+  value: CreatorProfile['availability'];
+  onChange: (a: CreatorProfile['availability']) => void;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const [fromDay, setFromDay]     = useState('');
+  const [fromMonth, setFromMonth] = useState('');
+  const [fromYear, setFromYear]   = useState('');
+  const [toDay, setToDay]         = useState('');
+  const [toMonth, setToMonth]     = useState('');
+  const [toYear, setToYear]       = useState('');
+
+  const buildIso = (d: string, m: string, y: string) => {
+    if (d.length === 2 && m.length === 2 && y.length === 4) {
+      const day = parseInt(d, 10), month = parseInt(m, 10), year = parseInt(y, 10);
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2025)
+        return `${y}-${m}-${d}`;
+    }
+    return null;
+  };
+
+  const resetModal = () => {
+    setFromDay(''); setFromMonth(''); setFromYear('');
+    setToDay(''); setToMonth(''); setToYear('');
+    setShowModal(false);
+  };
+
+  const addPeriod = () => {
+    const from = buildIso(fromDay, fromMonth, fromYear);
+    const to   = buildIso(toDay, toMonth, toYear);
+    if (!from || !to) { Alert.alert('Dates invalides', 'Vérifiez le format JJ / MM / AAAA.'); return; }
+    if (from > to)    { Alert.alert('Erreur', 'La date de début doit être avant la date de fin.'); return; }
+    onChange({ ...value, custom: [...value.custom, { from, to }] });
+    resetModal();
+  };
+
+  const removePeriod = (idx: number) =>
+    onChange({ ...value, custom: value.custom.filter((_: { from: string; to: string }, i: number) => i !== idx) });
+
+  const dateRows = [
+    { label: 'Du', d: fromDay, setD: setFromDay, m: fromMonth, setM: setFromMonth, y: fromYear, setY: setFromYear },
+    { label: 'Au', d: toDay,   setD: setToDay,   m: toMonth,   setM: setToMonth,   y: toYear,   setY: setToYear   },
+  ];
+
+  return (
+    <View>
+      <TouchableOpacity
+        style={availSt.toggleRow}
+        onPress={() => onChange({ ...value, weekends: !value.weekends })}
+        activeOpacity={0.8}
+      >
+        <View style={[availSt.track, value.weekends && availSt.trackOn]}>
+          <View style={[availSt.thumb, value.weekends && availSt.thumbOn]} />
+        </View>
+        <Text style={availSt.toggleLabel}>Disponible les weekends</Text>
+      </TouchableOpacity>
+
+      {value.custom.map((p: { from: string; to: string }, idx: number) => (
+        <View key={idx} style={availSt.periodRow}>
+          <Ionicons name="calendar-outline" size={14} color={colors.text.secondary} />
+          <Text style={availSt.periodText}>{formatPeriodDate(p.from)} → {formatPeriodDate(p.to)}</Text>
+          <TouchableOpacity onPress={() => removePeriod(idx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close-circle" size={18} color={colors.text.secondary} />
+          </TouchableOpacity>
+        </View>
+      ))}
+
+      <TouchableOpacity style={availSt.addBtn} onPress={() => setShowModal(true)}>
+        <Ionicons name="add" size={15} color={colors.primary} />
+        <Text style={availSt.addBtnText}>Ajouter une période</Text>
+      </TouchableOpacity>
+
+      <Modal visible={showModal} animationType="fade" transparent>
+        <View style={availSt.overlay}>
+          <View style={availSt.box}>
+            <Text style={availSt.boxTitle}>Nouvelle période</Text>
+            {dateRows.map(row => (
+              <View key={row.label} style={{ marginBottom: spacing.md }}>
+                <Text style={availSt.dateLabel}>{row.label}</Text>
+                <View style={availSt.dateRow}>
+                  <TextInput style={availSt.dateInput} placeholder="JJ" value={row.d}
+                    onChangeText={v => row.setD(v.replace(/\D/g, '').slice(0, 2))}
+                    keyboardType="number-pad" maxLength={2} />
+                  <Text style={availSt.dateSep}>/</Text>
+                  <TextInput style={availSt.dateInput} placeholder="MM" value={row.m}
+                    onChangeText={v => row.setM(v.replace(/\D/g, '').slice(0, 2))}
+                    keyboardType="number-pad" maxLength={2} />
+                  <Text style={availSt.dateSep}>/</Text>
+                  <TextInput style={[availSt.dateInput, { width: 64 }]} placeholder="AAAA" value={row.y}
+                    onChangeText={v => row.setY(v.replace(/\D/g, '').slice(0, 4))}
+                    keyboardType="number-pad" maxLength={4} />
+                </View>
+              </View>
+            ))}
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
+              <TouchableOpacity style={styles.btnCancel} onPress={resetModal}>
+                <Text style={styles.btnCancelText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.btnSave, { flex: 1 }]} onPress={addPeriod}>
+                <Text style={styles.btnSaveText}>Confirmer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const availSt = StyleSheet.create({
+  toggleRow:   { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  track:       { width: 44, height: 26, borderRadius: 13, backgroundColor: colors.border, justifyContent: 'center', paddingHorizontal: 3 },
+  trackOn:     { backgroundColor: colors.primary },
+  thumb:       { width: 20, height: 20, borderRadius: 10, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 2, elevation: 2 },
+  thumbOn:     { transform: [{ translateX: 18 }] },
+  toggleLabel: { ...typography.body, color: colors.text.primary },
+  periodRow:   { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.surface, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 7, marginBottom: spacing.xs, borderWidth: 1, borderColor: colors.border },
+  periodText:  { flex: 1, ...typography.caption, color: colors.text.primary },
+  addBtn:      { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: spacing.sm, alignSelf: 'flex-start' },
+  addBtnText:  { ...typography.caption, color: colors.primary, fontWeight: '600' },
+  overlay:     { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl },
+  box:         { width: '100%', backgroundColor: colors.background, borderRadius: radius.lg, padding: spacing.xl },
+  boxTitle:    { ...typography.h3, color: colors.text.primary, fontWeight: '700', marginBottom: spacing.lg },
+  dateLabel:   { ...typography.label, color: colors.text.secondary, marginBottom: spacing.xs, textTransform: 'uppercase', letterSpacing: 0.8 },
+  dateRow:     { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  dateInput:   { width: 44, backgroundColor: colors.surface, color: colors.text.primary, padding: spacing.sm, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, textAlign: 'center', ...typography.body },
+  dateSep:     { ...typography.body, color: colors.text.secondary },
+});
+
+// ─── SIRET format helpers ─────────────────────────────────────────────────────
+
+function formatSiretInput(raw: string): string {
+  const d = raw.replace(/\D/g, '').slice(0, 14);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6, 9)} ${d.slice(9)}`;
+}
+
+// ─── Verification section ─────────────────────────────────────────────────────
+
+function VerificationSection({ userId }: { userId: string }) {
+  const { creatorProfile, verifyCreatorSiret, submitInsuranceDoc } = useCreatorProfile(userId);
+
+  const [siretInput, setSiretInput]         = useState('');
+  const [verifyingSiret, setVerifyingSiret] = useState(false);
+  const [uploadingIns, setUploadingIns]     = useState(false);
+
+  useEffect(() => {
+    if (creatorProfile?.siret) setSiretInput(formatSiretInput(creatorProfile.siret));
+  }, [creatorProfile?.siret]);
+
+  const handleSiretChange = (v: string) => setSiretInput(formatSiretInput(v));
+
+  const handleVerifySiret = async () => {
+    setVerifyingSiret(true);
+    const { error } = await verifyCreatorSiret(siretInput);
+    setVerifyingSiret(false);
+    if (error) Alert.alert('Erreur', error);
+    else Alert.alert('SIRET vérifié ✓', 'Votre badge SIRET est maintenant actif sur votre profil.');
+  };
+
+  const handleInsuranceUpload = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Permission requise'); return; }
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    const ext = asset.uri.split('.').pop() ?? 'jpg';
+    setUploadingIns(true);
+    const { error } = await submitInsuranceDoc(asset.uri, ext);
+    setUploadingIns(false);
+    if (error) Alert.alert('Erreur', error);
+    else Alert.alert('Document envoyé ✓', "Votre justificatif a été reçu. Nous validerons votre badge Assurance RC sous 48h.");
+  };
+
+  const siretVerified     = creatorProfile?.siret_verified ?? false;
+  const insuranceVerified = creatorProfile?.insurance_verified ?? false;
+  const insurancePending  = !insuranceVerified && !!creatorProfile?.insurance_doc_url;
+
+  return (
+    <View style={verif.container}>
+      <Text style={styles.fieldLabel}>Vérification</Text>
+
+      {/* SIRET */}
+      <View style={verif.card}>
+        <View style={verif.cardHeader}>
+          <View style={[verif.iconBox, siretVerified && verif.iconBoxActive]}>
+            <Ionicons name="business-outline" size={18} color={siretVerified ? colors.primary : colors.text.secondary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={verif.cardTitle}>Numéro SIRET</Text>
+            <Text style={verif.cardSub}>Entreprise individuelle ou société enregistrée</Text>
+          </View>
+          {siretVerified && (
+            <View style={verif.badgeVerified}>
+              <Ionicons name="checkmark-circle" size={13} color={colors.primary} />
+              <Text style={verif.badgeVerifiedText}>Vérifié</Text>
+            </View>
+          )}
+        </View>
+
+        {!siretVerified && (
+          <View style={verif.inputRow}>
+            <TextInput
+              style={[verif.input, { flex: 1 }]}
+              value={siretInput}
+              onChangeText={handleSiretChange}
+              placeholder="XXX XXX XXX XXXXX"
+              placeholderTextColor={colors.text.secondary}
+              keyboardType="number-pad"
+              maxLength={17}
+            />
+            <TouchableOpacity
+              style={[verif.btnVerify, (verifyingSiret || siretInput.replace(/\s/g, '').length < 14) && { opacity: 0.5 }]}
+              onPress={handleVerifySiret}
+              disabled={verifyingSiret || siretInput.replace(/\s/g, '').length < 14}
+            >
+              <Text style={verif.btnVerifyText}>{verifyingSiret ? '…' : 'Vérifier'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Assurance RC */}
+      <View style={verif.card}>
+        <View style={verif.cardHeader}>
+          <View style={[verif.iconBox, insuranceVerified && verif.iconBoxActive]}>
+            <Ionicons name="shield-checkmark-outline" size={18} color={insuranceVerified ? colors.secondary : colors.text.secondary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={verif.cardTitle}>Assurance RC Pro</Text>
+            <Text style={verif.cardSub}>Responsabilité civile professionnelle</Text>
+          </View>
+          {insuranceVerified && (
+            <View style={[verif.badgeVerified, { backgroundColor: colors.secondary + '15' }]}>
+              <Ionicons name="checkmark-circle" size={13} color={colors.secondary} />
+              <Text style={[verif.badgeVerifiedText, { color: colors.secondary }]}>Validée</Text>
+            </View>
+          )}
+          {insurancePending && (
+            <View style={verif.badgePending}>
+              <Ionicons name="time-outline" size={13} color={colors.text.secondary} />
+              <Text style={verif.badgePendingText}>En attente</Text>
+            </View>
+          )}
+        </View>
+
+        {!insuranceVerified && (
+          <TouchableOpacity
+            style={[verif.btnUpload, uploadingIns && { opacity: 0.5 }]}
+            onPress={handleInsuranceUpload}
+            disabled={uploadingIns}
+          >
+            <Ionicons name="cloud-upload-outline" size={15} color={insurancePending ? colors.text.secondary : colors.primary} />
+            <Text style={[verif.btnUploadText, insurancePending && { color: colors.text.secondary }]}>
+              {uploadingIns ? 'Upload…' : insurancePending ? 'Remplacer le justificatif' : 'Importer un justificatif'}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {!insuranceVerified && (
+          <Text style={verif.hint}>
+            {insurancePending
+              ? 'Document reçu — validation sous 48h par notre équipe.'
+              : 'Photo ou scan de votre attestation RC Pro (JPG, PNG).'}
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const verif = StyleSheet.create({
+  container: { marginTop: spacing.xl },
+  card: {
+    backgroundColor: colors.surface, borderRadius: radius.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.md, marginBottom: spacing.sm,
+  },
+  cardHeader:  { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  iconBox: {
+    width: 36, height: 36, borderRadius: radius.sm,
+    backgroundColor: colors.muted, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
+  },
+  iconBoxActive: { backgroundColor: colors.primary + '15', borderColor: colors.primary + '40' },
+  cardTitle: { ...typography.label, color: colors.text.primary, fontWeight: '600' },
+  cardSub:   { ...typography.caption, color: colors.text.secondary, marginTop: 2 },
+
+  badgeVerified: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: colors.primary + '15', borderRadius: radius.full,
+    paddingHorizontal: spacing.sm, paddingVertical: 3,
+  },
+  badgeVerifiedText: { ...typography.caption, color: colors.primary, fontWeight: '700', fontSize: 11 },
+  badgePending: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: colors.muted, borderRadius: radius.full,
+    paddingHorizontal: spacing.sm, paddingVertical: 3,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  badgePendingText: { ...typography.caption, color: colors.text.secondary, fontSize: 11 },
+
+  inputRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  input: {
+    backgroundColor: colors.background, color: colors.text.primary,
+    padding: spacing.sm, borderRadius: radius.sm,
+    borderWidth: 1, borderColor: colors.border,
+    ...typography.body, letterSpacing: 1,
+  },
+  btnVerify: {
+    backgroundColor: colors.primary, paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm, borderRadius: radius.sm,
+  },
+  btnVerifyText: { ...typography.caption, color: colors.text.inverse, fontWeight: '700' },
+
+  btnUpload: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    borderWidth: 1, borderColor: colors.primary + '60', borderRadius: radius.sm,
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.md,
+    alignSelf: 'flex-start', marginBottom: spacing.xs,
+    backgroundColor: colors.primary + '08',
+  },
+  btnUploadText: { ...typography.caption, color: colors.primary, fontWeight: '600' },
+  hint: { ...typography.caption, color: colors.text.secondary, lineHeight: 16, marginTop: 2 },
+});
+
 // ─── Creator profile section ──────────────────────────────────────────────────
 
 function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: () => void }) {
@@ -156,6 +501,7 @@ function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: 
   const [website, setWebsite]           = useState('');
   const [instagram, setInstagram]       = useState('');
   const [etsy, setEtsy]                 = useState('');
+  const [availability, setAvailability] = useState<CreatorProfile['availability']>(DEFAULT_AVAIL);
 
   useEffect(() => {
     if (creatorProfile) {
@@ -166,6 +512,7 @@ function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: 
       setWebsite(creatorProfile.website ?? '');
       setInstagram(creatorProfile.instagram ?? '');
       setEtsy(creatorProfile.etsy ?? '');
+      setAvailability(creatorProfile.availability ?? DEFAULT_AVAIL);
     }
     if (profile?.bio) setBio(profile.bio);
   }, [creatorProfile, profile]);
@@ -178,7 +525,7 @@ function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: 
       return;
     }
     const [{ error: e1 }, e2] = await Promise.all([
-      upsert({ disciplines, city: city || null, region: region || null, travel_radius: travelRadius, website: website || null, instagram: instagram || null, etsy: etsy || null }),
+      upsert({ disciplines, city: city || null, region: region || null, travel_radius: travelRadius, website: website || null, instagram: instagram || null, etsy: etsy || null, availability }),
       updateBio(bio),
     ]);
     if (e1) { Alert.alert('Erreur', e1); return; }
@@ -219,6 +566,26 @@ function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: 
             {creatorProfile.etsy      && <Text style={styles.link}>Etsy : {creatorProfile.etsy}</Text>}
           </>
         ) : null}
+
+        {(creatorProfile.availability?.weekends || (creatorProfile.availability?.custom?.length ?? 0) > 0) && (
+          <>
+            <Text style={styles.fieldLabel}>Disponibilités</Text>
+            <View style={{ gap: spacing.xs }}>
+              {creatorProfile.availability?.weekends && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                  <Ionicons name="sunny-outline" size={13} color={colors.text.secondary} />
+                  <Text style={styles.fieldValue}>Disponible les weekends</Text>
+                </View>
+              )}
+              {creatorProfile.availability?.custom?.map((p, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                  <Ionicons name="calendar-outline" size={13} color={colors.text.secondary} />
+                  <Text style={styles.fieldValue}>{formatPeriodDate(p.from)} → {formatPeriodDate(p.to)}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <TouchableOpacity style={styles.btnSecondary} onPress={() => setIsEditing(true)}>
           <Text style={styles.btnSecondaryText}>Modifier mon profil</Text>
@@ -280,6 +647,11 @@ function CreatorProfileSection({ userId, onSaved }: { userId: string; onSaved?: 
       <TextInput style={styles.input} placeholder="Site web (https://…)" placeholderTextColor={colors.text.secondary} value={website} onChangeText={setWebsite} autoCapitalize="none" />
       <TextInput style={styles.input} placeholder="Instagram (sans @)" placeholderTextColor={colors.text.secondary} value={instagram} onChangeText={setInstagram} autoCapitalize="none" />
       <TextInput style={styles.input} placeholder="Boutique Etsy" placeholderTextColor={colors.text.secondary} value={etsy} onChangeText={setEtsy} autoCapitalize="none" />
+
+      <Text style={[styles.fieldLabel, { marginTop: spacing.lg }]}>Disponibilités</Text>
+      <AvailabilitySection value={availability} onChange={setAvailability} />
+
+      <VerificationSection userId={userId} />
 
       <View style={styles.formActions}>
         {isEditing && (
@@ -432,10 +804,44 @@ function CreatorProfileView({ userId, onEdit }: { userId: string; onEdit: () => 
             <Text style={profileViewStyles.location}>{creatorProfile.city}{creatorProfile.region ? `, ${creatorProfile.region}` : ''}</Text>
           </View>
         ) : null}
-        {isTrusted && (
-          <View style={profileViewStyles.trustBadge}>
-            <Ionicons name="checkmark-circle" size={13} color={colors.success} />
-            <Text style={profileViewStyles.trustText}>Créateur de confiance</Text>
+        {(isTrusted || creatorProfile?.siret_verified || creatorProfile?.insurance_verified) && (
+          <View style={profileViewStyles.badgesRow}>
+            {isTrusted && (
+              <View style={profileViewStyles.trustBadge}>
+                <Ionicons name="checkmark-circle" size={13} color={colors.success} />
+                <Text style={profileViewStyles.trustText}>Créateur de confiance</Text>
+              </View>
+            )}
+            {creatorProfile?.siret_verified && (
+              <View style={[profileViewStyles.trustBadge, profileViewStyles.siretBadge]}>
+                <Ionicons name="business-outline" size={13} color={colors.primary} />
+                <Text style={[profileViewStyles.trustText, { color: colors.primary }]}>SIRET vérifié</Text>
+              </View>
+            )}
+            {creatorProfile?.insurance_verified && (
+              <View style={[profileViewStyles.trustBadge, profileViewStyles.insuranceBadge]}>
+                <Ionicons name="shield-checkmark-outline" size={13} color={colors.secondary} />
+                <Text style={[profileViewStyles.trustText, { color: colors.secondary }]}>Assurance RC</Text>
+              </View>
+            )}
+          </View>
+        )}
+        {(creatorProfile?.availability?.weekends || (creatorProfile?.availability?.custom?.length ?? 0) > 0) && (
+          <View style={profileViewStyles.availRow}>
+            {creatorProfile?.availability?.weekends && (
+              <View style={profileViewStyles.availChip}>
+                <Ionicons name="sunny-outline" size={11} color={colors.text.secondary} />
+                <Text style={profileViewStyles.availChipText}>Weekends</Text>
+              </View>
+            )}
+            {(creatorProfile?.availability?.custom?.length ?? 0) > 0 && (
+              <View style={profileViewStyles.availChip}>
+                <Ionicons name="calendar-outline" size={11} color={colors.text.secondary} />
+                <Text style={profileViewStyles.availChipText}>
+                  {creatorProfile!.availability.custom.length} période{creatorProfile!.availability.custom.length > 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -464,6 +870,10 @@ function CreatorProfileView({ userId, onEdit }: { userId: string; onEdit: () => 
           <Text style={profileViewStyles.emptyGridSub}>Ajoutez des photos dans "Modifier le profil"</Text>
         </View>
       )}
+
+      <TouchableOpacity style={profileViewStyles.logoutBtn} onPress={() => supabase.auth.signOut()}>
+        <Text style={profileViewStyles.logoutText}>Se déconnecter</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -496,7 +906,16 @@ const profileViewStyles = StyleSheet.create({
   grid:         { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.xl, gap: spacing.xs },
   emptyGrid:    { alignItems: 'center', paddingTop: spacing.xxl, paddingHorizontal: spacing.xl },
   emptyGridText:{ ...typography.h3, color: colors.text.primary, marginTop: spacing.md },
-  emptyGridSub: { ...typography.body, color: colors.text.secondary, textAlign: 'center', marginTop: spacing.xs },
+  emptyGridSub:   { ...typography.body, color: colors.text.secondary, textAlign: 'center', marginTop: spacing.xs },
+
+  badgesRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
+  siretBadge:     { backgroundColor: colors.primary + '15', borderColor: colors.primary + '50' },
+  insuranceBadge: { backgroundColor: colors.secondary + '15', borderColor: colors.secondary + '50' },
+  availRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
+  availChip:      { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.muted, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 3, borderWidth: 1, borderColor: colors.border },
+  availChipText:  { ...typography.caption, color: colors.text.secondary, fontSize: 11 },
+  logoutBtn:      { marginHorizontal: spacing.xl, marginTop: spacing.xl, marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.error, padding: spacing.md, borderRadius: radius.md, alignItems: 'center' },
+  logoutText:     { color: colors.error, fontWeight: '600' },
 });
 
 // ─── Main ProfileScreen ───────────────────────────────────────────────────────

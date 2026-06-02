@@ -32,6 +32,38 @@ export function useCreatorProfile(userId: string | undefined) {
 
   useEffect(() => { fetch(); }, [fetch]);
 
+  const verifyCreatorSiret = async (siret: string): Promise<{ error: string | null }> => {
+    const cleaned = siret.replace(/\s/g, '');
+    if (!/^\d{14}$/.test(cleaned)) return { error: 'Format invalide — 14 chiffres requis.' };
+    if (!userId) return { error: 'Non connecté' };
+    const { error: err } = await supabase
+      .from('creator_profiles')
+      .update({ siret: cleaned, siret_verified: true })
+      .eq('user_id', userId);
+    if (err) return { error: err.message };
+    setCreatorProfile(prev => prev ? { ...prev, siret: cleaned, siret_verified: true } : prev);
+    return { error: null };
+  };
+
+  const submitInsuranceDoc = async (localUri: string, ext: string): Promise<{ error: string | null }> => {
+    if (!userId) return { error: 'Non connecté' };
+    const path = `${userId}/insurance.${ext}`;
+    const response = await globalThis.fetch(localUri);
+    const blob = await response.blob();
+    const { error: upErr } = await supabase.storage
+      .from('insurance-docs')
+      .upload(path, blob, { upsert: true });
+    if (upErr) return { error: upErr.message };
+    const { data: { publicUrl } } = supabase.storage.from('insurance-docs').getPublicUrl(path);
+    const { error: dbErr } = await supabase
+      .from('creator_profiles')
+      .update({ insurance_doc_url: publicUrl })
+      .eq('user_id', userId);
+    if (dbErr) return { error: dbErr.message };
+    setCreatorProfile(prev => prev ? { ...prev, insurance_doc_url: publicUrl } : prev);
+    return { error: null };
+  };
+
   const upsert = async (fields: Partial<Omit<CreatorProfile, 'id' | 'user_id' | 'siret_verified' | 'insurance_verified'>>) => {
     if (!userId) return { error: 'Non connecté' };
     setSaving(true);
@@ -57,5 +89,5 @@ export function useCreatorProfile(userId: string | undefined) {
     await supabase.from('profiles').update({ bio }).eq('id', userId);
   };
 
-  return { creatorProfile, loading, saving, error, upsert, updateBio, refetch: fetch };
+  return { creatorProfile, loading, saving, error, upsert, updateBio, verifyCreatorSiret, submitInsuranceDoc, refetch: fetch };
 }
