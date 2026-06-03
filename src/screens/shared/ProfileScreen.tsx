@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator, Image, Platform,
-  FlatList, Dimensions, Linking, Modal,
+  FlatList, Dimensions, Linking, Modal, KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -971,6 +971,7 @@ export default function ProfileScreen() {
               <Text style={styles.modalTitle}>Modifier le profil</Text>
               <View style={{ width: 32 }} />
             </View>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
               {/* Avatar */}
               <TouchableOpacity style={styles.avatarEditRow} onPress={pickAvatar} disabled={uploadingAvatar}>
@@ -985,6 +986,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               <CreatorProfileSection userId={profile.id} onSaved={() => setShowEdit(false)} />
             </ScrollView>
+            </KeyboardAvoidingView>
           </View>
         </Modal>
 
@@ -995,6 +997,7 @@ export default function ProfileScreen() {
 
   // ── Organisateur & visiteur : vue classique ──
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <TouchableOpacity onPress={pickAvatar} disabled={uploadingAvatar}>
@@ -1036,6 +1039,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
