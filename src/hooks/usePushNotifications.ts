@@ -4,6 +4,8 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { supabase } from '../lib/supabase';
 
+const PROJECT_ID = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+
 // Expo Go ne supporte plus les push depuis SDK 53 — on skip silencieusement
 const IS_EXPO_GO = Constants.appOwnership === 'expo';
 
@@ -42,18 +44,21 @@ export function usePushNotifications(userId: string | undefined) {
     if (!userId || Platform.OS === 'web' || IS_EXPO_GO) return;
 
     const register = async () => {
-      const { status: existing } = await Notifications.getPermissionsAsync();
-      let finalStatus = existing;
-      if (existing !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') return;
+      try {
+        const { status: existing } = await Notifications.getPermissionsAsync();
+        let finalStatus = existing;
+        if (existing !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== 'granted') return;
+        if (!PROJECT_ID) return;
 
-      const tokenData = await Notifications.getExpoPushTokenAsync();
-      const token = tokenData.data;
+        const tokenData = await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID });
+        const token = tokenData.data;
 
-      await supabase.from('profiles').update({ push_token: token }).eq('id', userId);
+        await supabase.from('profiles').update({ push_token: token }).eq('id', userId);
+      } catch (_) {}
     };
 
     register();
