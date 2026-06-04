@@ -3,14 +3,28 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Users, MapPin, MessageSquare, Award, Zap, Heart } from 'lucide-react'
-import { AnimatedGradientBg } from '@/components/animated-gradient-bg'
 import { SmokeBackground } from '@/components/smoke-background'
 
 export default function Home() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
-      {/* Hero Section with Animated Gradient */}
-      <AnimatedGradientBg>
+      {/* Hero Section with Smoke Background */}
+      <section
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {/* Smoke Background */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+          <SmokeBackground smokeColor="#6366F1" />
+        </div>
+
+        {/* Content */}
         <section
           style={{
             position: 'relative',
@@ -19,6 +33,7 @@ export default function Home() {
             paddingBottom: '80px',
             paddingLeft: '16px',
             paddingRight: '16px',
+            width: '100%',
           }}
         >
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -31,18 +46,18 @@ export default function Home() {
             {/* Badge */}
             <div
               style={{
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
                 marginBottom: '24px',
                 padding: '8px 16px',
                 borderRadius: '9999px',
                 fontSize: '14px',
                 fontWeight: '600',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                color: '#6366F1',
-                border: '1px solid rgba(99, 102, 241, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(8px)',
               }}
             >
               <Zap size={16} />
@@ -59,11 +74,11 @@ export default function Home() {
                 fontWeight: '700',
                 marginBottom: '24px',
                 lineHeight: '1.2',
-                color: '#1A1A1A',
+                color: '#FFFFFF',
               }}
             >
               La plateforme des{' '}
-              <span style={{ color: '#6366F1' }}>marchés artisanaux</span> en France
+              <span style={{ color: '#E5E7EB' }}>marchés artisanaux</span> en France
             </motion.h1>
 
             {/* Subtitle */}
@@ -76,7 +91,7 @@ export default function Home() {
                 marginBottom: '48px',
                 maxWidth: '900px',
                 margin: '0 auto 48px',
-                color: '#888888',
+                color: 'rgba(255, 255, 255, 0.8)',
                 lineHeight: '1.6',
               }}
             >
@@ -161,7 +176,7 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-      </AnimatedGradientBg>
+      </section>
 
       {/* Download Section with Smoke Background */}
       <section
