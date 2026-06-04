@@ -244,9 +244,13 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'transform 300ms ease',
+                minWidth: '180px',
+                minHeight: '60px',
               }}
               onMouseEnter={(e) => {
                 ;(e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-8px)'
@@ -261,6 +265,7 @@ export default function Home() {
                 style={{
                   height: '60px',
                   width: 'auto',
+                  display: 'block',
                   filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))',
                   transition: 'filter 300ms ease',
                 }}
@@ -279,9 +284,13 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'transform 300ms ease',
+                minWidth: '180px',
+                minHeight: '60px',
               }}
               onMouseEnter={(e) => {
                 ;(e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-8px)'
@@ -296,6 +305,7 @@ export default function Home() {
                 style={{
                   height: '60px',
                   width: 'auto',
+                  display: 'block',
                   filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))',
                   transition: 'filter 300ms ease',
                 }}
