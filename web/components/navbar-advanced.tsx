@@ -101,7 +101,6 @@ export function NavbarAdvanced() {
   }, [])
 
   const menuItems = [
-    { label: 'Accueil', href: '/' },
     { label: 'Découvrir', submenu: discoverItems },
     { label: 'Ressources', submenu: resourceItems },
   ]
