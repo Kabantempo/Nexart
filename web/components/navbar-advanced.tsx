@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Menu,
@@ -11,31 +11,99 @@ import {
   Calendar,
   MessageSquare,
   Award,
+  Zap,
+  Star,
+  Shield,
+  FileText,
   ArrowRight,
+  HelpCircle,
+  Handshake,
 } from 'lucide-react'
+import { GridCard } from './ui/grid-card'
 
-export function Navbar() {
+type NavItemType = {
+  title: string
+  href: string
+  description?: string
+  icon?: React.ComponentType<{ size: number; color?: string }>
+}
+
+const discoverItems: NavItemType[] = [
+  {
+    title: 'Événements',
+    href: '/events',
+    description: 'Marchés, salons et pop-ups',
+    icon: Calendar,
+  },
+  {
+    title: 'Créateurs',
+    href: '/creators',
+    description: 'Artisans et talents',
+    icon: Users,
+  },
+  {
+    title: 'Messagerie',
+    href: '#',
+    description: 'Communiquer en temps réel',
+    icon: MessageSquare,
+  },
+]
+
+const resourceItems: NavItemType[] = [
+  {
+    title: 'À propos',
+    href: '/about',
+    description: 'Notre mission et histoire',
+    icon: Award,
+  },
+  {
+    title: 'Aide',
+    href: '#',
+    description: 'Centre de support',
+    icon: HelpCircle,
+  },
+  {
+    title: 'Sécurité',
+    href: '#',
+    description: 'Confidentialité et données',
+    icon: Shield,
+  },
+  {
+    title: 'Contact',
+    href: '/contact',
+    icon: Handshake,
+    description: 'Nous contacter',
+  },
+  {
+    title: 'Blog',
+    href: '#',
+    icon: FileText,
+    description: 'Actualités et tutoriels',
+  },
+  {
+    title: 'Partenaires',
+    href: '#',
+    icon: Zap,
+    description: 'Collaborer avec nous',
+  },
+]
+
+export function NavbarAdvanced() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [isDesktop, setIsDesktop] = useState(true)
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const menuItems = [
     { label: 'Accueil', href: '/' },
-    {
-      label: 'Découvrir',
-      href: '#',
-      submenu: [
-        { label: 'Événements', href: '/events', icon: Calendar, description: 'Marchés & salons' },
-        { label: 'Créateurs', href: '/creators', icon: Users, description: 'Artisans & talents' },
-      ],
-    },
-    {
-      label: 'Ressources',
-      href: '#',
-      submenu: [
-        { label: 'À propos', href: '/about', icon: Award, description: 'Notre mission' },
-        { label: 'Contact', href: '/contact', icon: MessageSquare, description: 'Support' },
-      ],
-    },
+    { label: 'Découvrir', submenu: discoverItems },
+    { label: 'Ressources', submenu: resourceItems },
   ]
 
   return (
@@ -47,7 +115,6 @@ export function Navbar() {
         backgroundColor: '#FFFFFF',
         borderBottom: '1px solid #E5E7EB',
         backdropFilter: 'blur(10px)',
-        backgroundClip: 'padding-box',
       }}
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: '16px', paddingRight: '16px' }}>
@@ -57,7 +124,7 @@ export function Navbar() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: '64px',
+            height: '72px',
           }}
         >
           {/* Logo */}
@@ -74,22 +141,21 @@ export function Navbar() {
             Nexart
           </Link>
 
-          {/* Desktop Menu Items */}
+          {/* Desktop Menu */}
+          {isDesktop && (
           <div
             style={{
-              display: 'none',
+              display: 'flex',
               gap: '8px',
               alignItems: 'center',
-              '@media (min-width: 1024px)': {
-                display: 'flex',
-              },
             }}
-            className="hidden lg:flex"
           >
             {menuItems.map((item) => (
               <div key={item.label} style={{ position: 'relative' }}>
                 <button
-                  onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
+                  onClick={() =>
+                    setOpenDropdown(openDropdown === item.label ? null : item.label)
+                  }
                   style={{
                     padding: '8px 16px',
                     borderRadius: '6px',
@@ -106,9 +172,13 @@ export function Navbar() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = '#6366F1'
+                    if (!item.submenu) return
+                    setOpenDropdown(item.label)
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '#888888'
+                    if (openDropdown !== item.label) {
+                      e.currentTarget.style.color = '#888888'
+                    }
                   }}
                 >
                   {item.label}
@@ -123,7 +193,7 @@ export function Navbar() {
                   )}
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Advanced Dropdown Menu */}
                 {item.submenu && openDropdown === item.label && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -134,93 +204,107 @@ export function Navbar() {
                       position: 'absolute',
                       top: '100%',
                       left: 0,
-                      marginTop: '8px',
+                      marginTop: '12px',
                       backgroundColor: '#FFFFFF',
                       border: '1px solid #E5E7EB',
                       borderRadius: '12px',
-                      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-                      minWidth: '300px',
-                      padding: '8px',
+                      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+                      minWidth: '600px',
+                      padding: '16px',
                       zIndex: 1000,
                     }}
+                    onMouseEnter={() => setOpenDropdown(item.label)}
+                    onMouseLeave={() => setOpenDropdown(null)}
                   >
-                    {item.submenu.map((subitem) => {
-                      const Icon = subitem.icon
-                      return (
-                        <Link
-                          key={subitem.label}
-                          href={subitem.href}
-                          style={{
-                            display: 'flex',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 300ms ease',
-                            marginBottom: '4px',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F5F5F7'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent'
-                          }}
-                        >
-                          <div
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '16px',
+                      }}
+                    >
+                      {item.submenu.map((subitem) => {
+                        const Icon = subitem.icon
+                        return (
+                          <Link
+                            key={subitem.href}
+                            href={subitem.href}
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                              textDecoration: 'none',
                             }}
                           >
-                            <Icon size={20} color="#6366F1" />
-                          </div>
-                          <div>
-                            <p
+                            <GridCard
                               style={{
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                color: '#1A1A1A',
-                                margin: 0,
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '8px',
+                                borderColor: '#E5E7EB',
+                              }}
+                              onMouseEnter={(e: any) => {
+                                e.currentTarget.style.borderColor = '#6366F1'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.1)'
+                              }}
+                              onMouseLeave={(e: any) => {
+                                e.currentTarget.style.borderColor = '#E5E7EB'
+                                e.currentTarget.style.boxShadow = 'none'
                               }}
                             >
-                              {subitem.label}
-                            </p>
-                            <p
-                              style={{
-                                fontSize: '12px',
-                                color: '#888888',
-                                margin: '4px 0 0 0',
-                              }}
-                            >
-                              {subitem.description}
-                            </p>
-                          </div>
-                        </Link>
-                      )
-                    })}
+                              {Icon && (
+                                <div
+                                  style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '6px',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <Icon size={18} color="#6366F1" />
+                                </div>
+                              )}
+                              <div>
+                                <p
+                                  style={{
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#1A1A1A',
+                                    margin: 0,
+                                  }}
+                                >
+                                  {subitem.title}
+                                </p>
+                                {subitem.description && (
+                                  <p
+                                    style={{
+                                      fontSize: '12px',
+                                      color: '#888888',
+                                      margin: '4px 0 0 0',
+                                    }}
+                                  >
+                                    {subitem.description}
+                                  </p>
+                                )}
+                              </div>
+                            </GridCard>
+                          </Link>
+                        )
+                      })}
+                    </div>
                   </motion.div>
                 )}
               </div>
             ))}
           </div>
+          )}
 
           {/* CTA Buttons */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
-              flex: 'none',
-            }}
-          >
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flex: 'none' }}>
             {/* Desktop Buttons */}
-            <div style={{ display: 'none', gap: '12px', '@media (min-width: 1024px)': { display: 'flex' } }} className="hidden lg:flex">
+            {isDesktop && (
+            <div style={{ display: 'flex', gap: '12px' }}>
               <Link
                 href="/login"
                 style={{
@@ -235,10 +319,10 @@ export function Navbar() {
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => {
-                  e.style.color = '#6366F1'
+                  e.currentTarget.style.color = '#6366F1'
                 }}
                 onMouseLeave={(e) => {
-                  e.style.color = '#888888'
+                  e.currentTarget.style.color = '#888888'
                 }}
               >
                 Connexion
@@ -272,8 +356,10 @@ export function Navbar() {
                 <ArrowRight size={16} />
               </Link>
             </div>
+            )}
 
             {/* Mobile Menu Button */}
+            {!isDesktop && (
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{
@@ -296,17 +382,14 @@ export function Navbar() {
                 e.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              {mobileMenuOpen ? (
-                <X size={20} color="#6366F1" />
-              ) : (
-                <Menu size={20} color="#6366F1" />
-              )}
+              {mobileMenuOpen ? <X size={20} color="#6366F1" /> : <Menu size={20} color="#6366F1" />}
             </button>
+            )}
           </div>
         </nav>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
+        {!isDesktop && mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -353,10 +436,17 @@ export function Navbar() {
                       />
                     </button>
                     {openDropdown === item.label && (
-                      <div style={{ paddingLeft: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div
+                        style={{
+                          paddingLeft: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                        }}
+                      >
                         {item.submenu.map((subitem) => (
                           <Link
-                            key={subitem.label}
+                            key={subitem.href}
                             href={subitem.href}
                             style={{
                               padding: '12px 12px',
@@ -376,7 +466,7 @@ export function Navbar() {
                               e.currentTarget.style.backgroundColor = 'transparent'
                             }}
                           >
-                            {subitem.label}
+                            {subitem.title}
                           </Link>
                         ))}
                       </div>
@@ -443,10 +533,10 @@ export function Navbar() {
                 }}
                 onClick={() => setMobileMenuOpen(false)}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#5B5BD6'
+                  e.style.backgroundColor = '#5B5BD6'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#6366F1'
+                  e.style.backgroundColor = '#6366F1'
                 }}
               >
                 S'inscrire

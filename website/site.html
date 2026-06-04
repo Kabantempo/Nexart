@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexart — Marketplace Artisans & Marchés</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0D0D0D; color: #F5F3EF; line-height: 1.6; }
+
+        /* HEADER */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(13,13,13,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 4%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, #C9A84C, #e8c97a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        nav { display: flex; gap: 2rem; }
+        nav a { text-decoration: none; color: #8A8A8A; transition: color 0.3s; }
+        nav a:hover { color: #C9A84C; }
+        .btn-header { background: #C9A84C; color: #0D0D0D; padding: 0.6rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .btn-header:hover { background: #a88a3a; }
+
+        /* MAIN */
+        main { margin-top: 70px; }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 4rem 4%;
+            background: linear-gradient(135deg, rgba(201,168,76,0.1), rgba(122,158,135,0.1));
+        }
+        .hero-content { max-width: 900px; }
+        .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-family: 'Playfair Display', serif; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.1; }
+        .hero h1 .highlight { background: linear-gradient(135deg, #C9A84C, #e8c97a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 1.1rem; color: #8A8A8A; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+        .btn-primary { background: #C9A84C; color: #0D0D0D; padding: 1rem 2rem; border-radius: 10px; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { background: #a88a3a; transform: translateY(-2px); }
+        .btn-secondary { background: transparent; color: #F5F3EF; padding: 1rem 2rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-secondary:hover { border-color: #C9A84C; color: #C9A84C; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .stat { }
+        .stat-num { font-size: 3rem; font-weight: 700; color: #C9A84C; }
+        .stat-label { font-size: 0.9rem; color: #8A8A8A; margin-top: 0.5rem; }
+
+        /* SECTION */
+        section { padding: 6rem 4%; border-top: 1px solid rgba(255,255,255,0.08); }
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-title { font-size: 2.5rem; font-family: 'Playfair Display', serif; margin-bottom: 1rem; }
+        .section-sub { font-size: 1.05rem; color: #8A8A8A; max-width: 600px; margin: 0 auto; }
+
+        /* CREATORS GRID */
+        .creators-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .creator-card {
+            background: #1A1A1A; border: 1px solid rgba(255,255,255,0.08); border-radius: 15px;
+            padding: 2rem; text-align: center; transition: all 0.3s;
+        }
+        .creator-card:hover { border-color: #C9A84C; transform: translateY(-5px); }
+        .creator-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #C9A84C, #7A9E87); margin: 0 auto 1rem; }
+        .creator-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .creator-role { font-size: 0.9rem; color: #8A8A8A; }
+        .creator-tags { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+        .tag { background: rgba(201,168,76,0.1); color: #C9A84C; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; }
+
+        /* EVENTS LIST */
+        .events-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .event-card {
+            background: #1A1A1A; border: 1px solid rgba(255,255,255,0.08); border-radius: 15px;
+            overflow: hidden; transition: all 0.3s;
+        }
+        .event-card:hover { border-color: #C9A84C; }
+        .event-image {
+            height: 200px; background: linear-gradient(135deg, #C9A84C, #7A9E87);
+            display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
+        }
+        .event-info { padding: 1.5rem; }
+        .event-title { font-weight: 600; margin-bottom: 0.5rem; }
+        .event-meta { font-size: 0.9rem; color: #8A8A8A; margin-bottom: 1rem; }
+        .event-btn { display: inline-block; background: #C9A84C; color: #0D0D0D; padding: 0.6rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .event-btn:hover { background: #a88a3a; }
+
+        /* FOOTER */
+        footer {
+            background: #1A1A1A; border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 3rem 4%; text-align: center; color: #8A8A8A; font-size: 0.9rem;
+        }
+        footer a { color: #C9A84C; text-decoration: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            nav { display: none; }
+            .hero h1 { font-size: 2rem; }
+            .creators-grid, .events-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="logo">Nexart</div>
+    <nav>
+        <a href="#creators">Créateurs</a>
+        <a href="#events">Événements</a>
+        <a href="#about">À propos</a>
+    </nav>
+    <a href="#" class="btn-header">Télécharger l'app</a>
+</header>
+
+<!-- HERO -->
+<main>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Connectez votre passion <span class="highlight">artisanale</span></h1>
+            <p>La plateforme qui relie les créateurs français avec 200+ marchés artisanaux</p>
+            <div class="hero-btns">
+                <button class="btn-primary">Découvrir l'app</button>
+                <button class="btn-secondary">En savoir plus</button>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-num">500+</div>
+                    <div class="stat-label">Créateurs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">200+</div>
+                    <div class="stat-label">Marchés</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">12</div>
+                    <div class="stat-label">Régions</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CREATORS -->
+    <section id="creators">
+        <div class="section-header">
+            <h2 class="section-title">Nos Créateurs</h2>
+            <p class="section-sub">Découvrez 500+ artisans passionnés</p>
+        </div>
+        <div class="creators-grid">
+            <div class="creator-card">
+                <div class="creator-avatar"></div>
+                <div class="creator-name">Sophie Leroux</div>
+                <div class="creator-role">Tatoueuse Fine Line</div>
+                <div class="creator-tags">
+                    <span class="tag">Tatouage</span>
+                    <span class="tag">Illustration</span>
+                </div>
+            </div>
+            <div class="creator-card">
+                <div class="creator-avatar"></div>
+                <div class="creator-name">Marc Dumont</div>
+                <div class="creator-role">Céramiste</div>
+                <div class="creator-tags">
+                    <span class="tag">Céramique</span>
+                    <span class="tag">Poterie</span>
+                </div>
+            </div>
+            <div class="creator-card">
+                <div class="creator-avatar"></div>
+                <div class="creator-name">Isabelle Chen</div>
+                <div class="creator-role">Joaillière</div>
+                <div class="creator-tags">
+                    <span class="tag">Joaillerie</span>
+                    <span class="tag">Bijoux</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events">
+        <div class="section-header">
+            <h2 class="section-title">200+ Marchés Artisanaux</h2>
+            <p class="section-sub">Trouvez l'événement parfait pour vendre vos créations</p>
+        </div>
+        <div class="events-list">
+            <div class="event-card">
+                <div class="event-image">Marché Bastille</div>
+                <div class="event-info">
+                    <div class="event-title">Marché des Créateurs Bastille</div>
+                    <div class="event-meta">📍 Paris • 6-29 Juin • 120€</div>
+                    <a href="#" class="event-btn">Voir détails</a>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">Salon Lyon</div>
+                <div class="event-info">
+                    <div class="event-title">Salon du Design & Craft Lyon</div>
+                    <div class="event-meta">📍 Lyon • 9-11 Oct • 450€</div>
+                    <a href="#" class="event-btn">Voir détails</a>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">Pop-up Bordeaux</div>
+                <div class="event-info">
+                    <div class="event-title">Pop-up Artisanat Bordeaux</div>
+                    <div class="event-meta">📍 Bordeaux • 18-19 Juil • 80€</div>
+                    <a href="#" class="event-btn">Voir détails</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+        <div class="section-header">
+            <h2 class="section-title">À Propos de Nexart</h2>
+            <p class="section-sub">Simplifier la rencontre entre créateurs et marchés artisanaux</p>
+        </div>
+        <div style="max-width: 700px; margin: 0 auto; text-align: left; color: #8A8A8A; line-height: 1.8;">
+            <p style="margin-bottom: 1rem;">Nexart est née d'une simple observation : les créateurs et artisans passionnés avaient du mal à trouver des marchés pour vendre leurs créations.</p>
+            <p style="margin-bottom: 1rem;">Nous avons créé Nexart pour résoudre ce problème — une plateforme simple, efficace et intuitive qui connecte les deux mondes.</p>
+            <p>Aujourd'hui, 500+ créateurs français utilisent Nexart pour trouver les meilleurs marchés et développer leur activité.</p>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section style="background: rgba(201,168,76,0.05); text-align: center;">
+        <h2 class="section-title" style="margin-bottom: 1rem;">Prêt à rejoindre Nexart ?</h2>
+        <p style="color: #8A8A8A; margin-bottom: 2rem;">Téléchargez l'app et commencez à candidater aux marchés</p>
+        <button class="btn-primary">Télécharger maintenant</button>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    <p>&copy; 2026 Nexart — Tous droits réservés • <a href="#">Contact</a> • <a href="#">Confidentialité</a></p>
+</footer>
+
+<script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+</script>
+
+</body>
+</html>

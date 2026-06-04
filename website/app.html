@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexart — Dashboard Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0D0D0D;
+      --surface:   #1A1A1A;
+      --surface2:  #222222;
+      --gold:      #C9A84C;
+      --gold-dim:  #a88a3a;
+      --sage:      #7A9E87;
+      --off-white: #F5F3EF;
+      --muted:     #8A8A8A;
+      --border:    rgba(255,255,255,0.08);
+      --glass:     rgba(255,255,255,0.04);
+      --r-sm: 8px; --r-md: 14px; --r-lg: 22px; --r-xl: 32px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--off-white); overflow-x: hidden; line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ═══ HEADER ═══ */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 70px;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 32px; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--gold); text-decoration: none; }
+
+    .nav-main { display: flex; gap: 32px; }
+    .nav-main a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-main a:hover, .nav-main a.active { color: var(--gold); }
+
+    .header-right { display: flex; align-items: center; gap: 20px; }
+    .search-box { background: var(--surface); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--r-md); width: 250px; color: var(--off-white); font-size: 0.9rem; }
+    .search-box::placeholder { color: var(--muted); }
+
+    .user-profile { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: var(--surface); border-radius: var(--r-md); cursor: pointer; border: 1px solid var(--border); transition: border-color 0.2s; }
+    .user-profile:hover { border-color: var(--gold); }
+    .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--sage)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black; }
+    .user-info { display: flex; flex-direction: column; font-size: 0.85rem; }
+    .user-name { font-weight: 600; }
+    .user-role { color: var(--muted); font-size: 0.75rem; }
+
+    /* ═══ SIDEBAR ═══ */
+    aside {
+      position: fixed; left: 0; top: 70px; bottom: 0; width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 16px;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .sidebar-section { margin-bottom: 32px; }
+    .sidebar-title { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--r-lg); color: var(--muted); text-decoration: none; transition: all 0.2s; cursor: pointer; margin-bottom: 8px; }
+    .nav-item:hover { background: var(--surface2); color: var(--off-white); }
+    .nav-item.active { background: linear-gradient(135deg, var(--gold), #e8c97a); color: black; font-weight: 600; }
+    .nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+
+    /* ═══ MAIN ═══ */
+    main {
+      margin-left: 280px;
+      margin-top: 70px;
+      flex: 1;
+      padding: 40px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    .page-header { margin-bottom: 40px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 700; margin-bottom: 8px; }
+    .page-subtitle { color: var(--muted); font-size: 1rem; }
+
+    /* ═══ STATS GRID ═══ */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 24px; transition: all 0.3s; }
+    .stat-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+    .stat-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: var(--gold); }
+    .stat-change { font-size: 0.8rem; color: var(--sage); margin-top: 8px; }
+
+    /* ═══ CONTENT CARDS ═══ */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 28px; margin-bottom: 28px; }
+    .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+    .card-title-icon { font-size: 1.6rem; }
+
+    .events-list { display: grid; gap: 16px; }
+    .event-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+    .event-item:hover { border-color: var(--gold); }
+    .event-info { flex: 1; }
+    .event-title { font-weight: 600; margin-bottom: 6px; }
+    .event-meta { font-size: 0.9rem; color: var(--muted); }
+    .event-btn { background: var(--gold); color: black; padding: 8px 20px; border-radius: var(--r-md); border: none; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .event-btn:hover { background: var(--gold-dim); }
+
+    /* ═══ TABLE ═══ */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--surface2); padding: 16px; text-align: left; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    td { padding: 16px; border-bottom: 1px solid var(--border); }
+    tr:hover { background: var(--surface2); }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .status-pending { background: rgba(201,168,76,.2); color: var(--gold); }
+    .status-accepted { background: rgba(122,158,135,.2); color: var(--sage); }
+    .status-refused { background: rgba(224,90,90,.2); color: #E05A5A; }
+
+    /* ═══ FOOTER ═══ */
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 40px; margin-left: 280px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 1200px) {
+      main { padding: 24px; }
+      aside { width: 240px; }
+      .nav-main { gap: 16px; }
+      .search-box { width: 180px; }
+    }
+
+    @media (max-width: 900px) {
+      aside { position: absolute; left: -280px; top: 70px; height: 100vh; z-index: 200; width: 280px; transition: left 0.3s; background: rgba(26,26,26,0.98); }
+      aside.open { left: 0; }
+      main { margin-left: 0; }
+      footer { margin-left: 0; }
+      .menu-toggle { display: flex; cursor: pointer; font-size: 1.4rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 0 16px; }
+      .nav-main { display: none; }
+      .search-box { display: none; }
+      main { padding: 16px; }
+      .page-title { font-size: 1.8rem; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .event-item { flex-direction: column; align-items: flex-start; }
+      .event-btn { width: 100%; }
+      .user-info { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-left">
+    <a href="/" class="logo">Nexart</a>
+    <nav class="nav-main">
+      <a href="#" class="active">Tableau de bord</a>
+      <a href="#events">Événements</a>
+      <a href="#applications">Candidatures</a>
+      <a href="#messages">Messages</a>
+    </nav>
+  </div>
+
+  <div class="header-right">
+    <input type="text" class="search-box" placeholder="Chercher événement...">
+    <div class="user-profile">
+      <div class="avatar">SC</div>
+      <div class="user-info">
+        <div class="user-name">Sophie Leroux</div>
+        <div class="user-role">Créatrice</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-title">Principal</div>
+    <a href="#" class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span>Tableau de bord</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">📅</span>
+      <span>Événements</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">📬</span>
+      <span>Candidatures</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">💬</span>
+      <span>Messages</span>
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-title">Compte</div>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>Mon profil</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">⚙️</span>
+      <span>Paramètres</span>
+    </a>
+    <a href="#" class="nav-item">
+      <span class="nav-icon">🚪</span>
+      <span>Déconnexion</span>
+    </a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Tableau de bord créateur</h1>
+    <p class="page-subtitle">Bienvenue Sophie ! Voici votre vue d'ensemble.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">📋 Candidatures</div>
+      <div class="stat-value">3</div>
+      <div class="stat-change">↑ 1 en attente</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">✅ Acceptées</div>
+      <div class="stat-value">2</div>
+      <div class="stat-change">✓ Confirmées</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">❤️ Favoris</div>
+      <div class="stat-value">8</div>
+      <div class="stat-change">Événements sauvés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">💬 Messages</div>
+      <div class="stat-value">5</div>
+      <div class="stat-change">Non lus</div>
+    </div>
+  </div>
+
+  <!-- Événements Récents -->
+  <div class="card" id="events">
+    <div class="card-title">
+      <span>📅 Événements recommandés</span>
+      <a href="#" style="color: var(--gold); font-size: 0.9rem; text-decoration: none;">Voir tous</a>
+    </div>
+    <div class="events-list">
+      <div class="event-item">
+        <div class="event-info">
+          <div class="event-title">Marché des Créateurs Bastille — Juin 2026</div>
+          <div class="event-meta">📍 Paris (11e) • 💰 120€ • 👥 35 stands</div>
+        </div>
+        <button class="event-btn">Voir détails</button>
+      </div>
+      <div class="event-item">
+        <div class="event-info">
+          <div class="event-title">Salon du Design & Craft Lyon — Automne 2026</div>
+          <div class="event-meta">📍 Lyon • 💰 450€ • 👥 80 stands</div>
+        </div>
+        <button class="event-btn">Voir détails</button>
+      </div>
+      <div class="event-item">
+        <div class="event-info">
+          <div class="event-title">Pop-up Artisanat Bordeaux — Juillet 2026</div>
+          <div class="event-meta">📍 Bordeaux • 💰 80€ • 👥 20 stands</div>
+        </div>
+        <button class="event-btn">Voir détails</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Candidatures -->
+  <div class="card" id="applications">
+    <div class="card-title">
+      <span>📬 Vos candidatures</span>
+      <a href="#" style="color: var(--gold); font-size: 0.9rem; text-decoration: none;">Gestion complète</a>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Événement</th>
+            <th>Lieu</th>
+            <th>Dates</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Marché Bastille</strong></td>
+            <td>Paris (11e)</td>
+            <td>6-29 juin</td>
+            <td><span class="status-badge status-accepted">✓ Acceptée</span></td>
+            <td><a href="#" style="color: var(--gold);">Voir</a></td>
+          </tr>
+          <tr>
+            <td><strong>Salon Lyon</strong></td>
+            <td>Lyon</td>
+            <td>9-11 oct</td>
+            <td><span class="status-badge status-pending">⏳ En attente</span></td>
+            <td><a href="#" style="color: var(--gold);">Voir</a></td>
+          </tr>
+          <tr>
+            <td><strong>Pop-up Bordeaux</strong></td>
+            <td>Bordeaux</td>
+            <td>18-19 juil</td>
+            <td><span class="status-badge status-refused">✗ Refusée</span></td>
+            <td><a href="#" style="color: var(--gold);">Voir</a></td>
+          </tr>
+          <tr>
+            <td><strong>Marché Nantes</strong></td>
+            <td>Nantes</td>
+            <td>5 juil - 30 août</td>
+            <td><span class="status-badge status-accepted">✓ Acceptée</span></td>
+            <td><a href="#" style="color: var(--gold);">Voir</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Messages Récents -->
+  <div class="card" id="messages">
+    <div class="card-title">
+      <span>💬 Messages récents</span>
+      <a href="#" style="color: var(--gold); font-size: 0.9rem; text-decoration: none;">Tous les messages</a>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>De</th>
+            <th>Événement</th>
+            <th>Message</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Claire Moreau</strong></td>
+            <td>Marché Bastille</td>
+            <td>Tu recevras le lien de paiement dans la journée.</td>
+            <td>Hier à 11h</td>
+          </tr>
+          <tr>
+            <td><strong>Thomas Blanc</strong></td>
+            <td>Salon Lyon</td>
+            <td>Bonjour, nous étudions votre candidature...</td>
+            <td>Il y a 2 j</td>
+          </tr>
+          <tr>
+            <td><strong>Léa Visiteur</strong></td>
+            <td>Contact</td>
+            <td>Bonjour, je suis très intéressée par vos créations !</td>
+            <td>Il y a 3 j</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <p>© 2026 Nexart — Version web desktop • <a href="#" style="color: var(--gold); text-decoration: none;">Contact</a> • <a href="#" style="color: var(--gold); text-decoration: none;">Confidentialité</a></p>
+</footer>
+
+<script>
+  // Sidebar toggle mobile
+  document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('aside');
+    if (e.target.closest('.menu-toggle')) {
+      sidebar.classList.toggle('open');
+    }
+  });
+
+  // Active nav
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.nav-item')) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        e.target.closest('.nav-item').classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
