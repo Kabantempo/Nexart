@@ -162,86 +162,60 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              style={{ textAlign: 'center', marginTop: '64px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}
+              style={{ textAlign: 'center', marginTop: '80px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}
             >
-              <p style={{ color: '#AAAAAA', fontSize: '14px', marginBottom: '8px' }}>
-                Télécharger l'application
-              </p>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                {/* App Store Button */}
+              <div>
+                <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '600', marginBottom: '24px' }}>
+                  Télécharger Nexart
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {/* App Store Button - Official Badge */}
                 <a
-                  href="https://apps.apple.com"
+                  href="https://apps.apple.com/app/nexart/id6736595834"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    border: '2px solid #FFFFFF',
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    color: '#FFFFFF',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    backdropFilter: 'blur(8px)',
-                    transition: 'all 300ms ease',
+                    display: 'inline-block',
+                    transition: 'transform 300ms ease',
                     cursor: 'pointer',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'scale(1.05)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
+                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.05 13.5C17.05 12.37 17.89 11.48 19 11.48C20.11 11.48 20.95 12.37 20.95 13.5C20.95 14.63 20.11 15.52 19 15.52C17.89 15.52 17.05 14.63 17.05 13.5M4.05 13.5C4.05 12.37 4.89 11.48 6 11.48C7.11 11.48 7.95 12.37 7.95 13.5C7.95 14.63 7.11 15.52 6 15.52C4.89 15.52 4.05 14.63 4.05 13.5M6 4H18C20.21 4 22 5.79 22 8V18C22 20.21 20.21 22 18 22H6C3.79 22 2 20.21 2 18V8C2 5.79 3.79 4 6 4Z" fill="currentColor"/>
-                  </svg>
-                  App Store
+                  <img
+                    src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1234567890"
+                    alt="Télécharger sur l'App Store"
+                    style={{ height: '50px', width: 'auto' }}
+                  />
                 </a>
 
-                {/* Google Play Button */}
+                {/* Google Play Button - Official Badge */}
                 <a
-                  href="https://play.google.com"
+                  href="https://play.google.com/store/apps/details?id=com.nexart.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    border: '2px solid #FFFFFF',
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    color: '#FFFFFF',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    backdropFilter: 'blur(8px)',
-                    transition: 'all 300ms ease',
+                    display: 'inline-block',
+                    transition: 'transform 300ms ease',
                     cursor: 'pointer',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'scale(1.05)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
+                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 3L12 13L21 3M3 3L12 13M3 3H21C21.5304 3 22.0391 3.21071 22.4142 3.58579C22.7893 3.96086 23 4.46957 23 5V19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V5C1 4.46957 1.21071 3.96086 1.58579 3.58579C1.96086 3.21071 2.46957 3 3 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Google Play
+                  <img
+                    src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                    alt="Télécharger sur Google Play"
+                    style={{ height: '50px', width: 'auto' }}
+                  />
                 </a>
               </div>
             </motion.div>
