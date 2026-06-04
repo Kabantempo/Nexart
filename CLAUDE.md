@@ -239,10 +239,17 @@ cd website && npx serve . -p 3000  # Site marketing
 ## Variables d'environnement (`.env`)
 
 ```
+EXPO_PUBLIC_DEMO_MODE=true                         # Données de test (true = dev, false = prod)
 EXPO_PUBLIC_SUPABASE_URL=https://cvqeysnymnkfxfithhsr.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
 EXPO_PUBLIC_STRIPE_KEY=pk_...
 ```
+
+### Données de test (demoData.ts)
+
+- **Mode développement** (`EXPO_PUBLIC_DEMO_MODE=true`) : Affiche 5 événements, 5 créateurs, messages, avis, posts de démonstration
+- **Mode production** (`EXPO_PUBLIC_DEMO_MODE=false`) : Données réelles depuis Supabase uniquement
+- Tous les hooks (`useEvents`, `useCreators`, `useMessages`, etc.) vérifient `DEMO_MODE` et basculant automatiquement
 
 ## Conventions
 

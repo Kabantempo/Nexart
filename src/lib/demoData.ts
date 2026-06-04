@@ -1,8 +1,8 @@
 // ============================================================
 // NEXART — Données de démonstration
-// Mettre DEMO_MODE = false avant la mise en production
+// DEMO_MODE est automatiquement désactivé en production
 // ============================================================
-export const DEMO_MODE = true;
+export const DEMO_MODE = process.env.EXPO_PUBLIC_DEMO_MODE !== 'false';
 
 // ─── 3 images de test (picsum.photos — toujours disponibles) ─
 
