@@ -331,6 +331,240 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Events Section */}
+      <section
+        style={{
+          padding: '80px 16px',
+          background: 'linear-gradient(to bottom, #F5F5F7, #FFFFFF)',
+          borderBottom: '1px solid #E5E7EB',
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginBottom: '64px' }}
+          >
+            <h2 style={{ fontSize: '48px', fontWeight: '700', marginBottom: '16px', color: '#1A1A1A' }}>
+              Marchés & Événements à ne pas rater
+            </h2>
+            <p style={{ fontSize: '18px', color: '#888888', maxWidth: '600px', margin: '0 auto' }}>
+              Explorez les meilleurs marchés et événements artisanaux en France pour exposer vos créations
+            </p>
+          </motion.div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '32px',
+            }}
+          >
+            {[
+              {
+                title: 'Salon d\'Automne Créateurs',
+                location: 'Paris, France',
+                date: '15-17 Nov 2024',
+                type: 'Salon',
+                stands: '50+ disponibles',
+                featured: true,
+              },
+              {
+                title: 'Pop-up Marché Artisan',
+                location: 'Lyon, France',
+                date: '1-3 Décembre',
+                type: 'Pop-up',
+                stands: '30 places',
+                featured: false,
+              },
+              {
+                title: 'Marché Permanent Bastille',
+                location: 'Paris, France',
+                date: 'Chaque weekend',
+                type: 'Permanent',
+                stands: 'Continu',
+                featured: true,
+              },
+              {
+                title: 'Foire Métiers d\'Art',
+                location: 'Bordeaux, France',
+                date: '5-8 Décembre',
+                type: 'Foire',
+                stands: '100+ places',
+                featured: false,
+              },
+            ].map((event, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                style={{
+                  borderRadius: '12px',
+                  border: event.featured ? '2px solid #6366F1' : '1px solid #E5E7EB',
+                  backgroundColor: '#FFFFFF',
+                  overflow: 'hidden',
+                  transition: 'all 300ms ease',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(99, 102, 241, 0.15)'
+                  e.currentTarget.style.transform = 'translateY(-8px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                {/* Featured Badge */}
+                {event.featured && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '16px',
+                      right: '16px',
+                      padding: '6px 12px',
+                      borderRadius: '9999px',
+                      backgroundColor: '#6366F1',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      zIndex: 10,
+                    }}
+                  >
+                    En vedette
+                  </div>
+                )}
+
+                {/* Header Image */}
+                <div
+                  style={{
+                    width: '100%',
+                    height: '180px',
+                    background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#FFFFFF',
+                    fontSize: '48px',
+                    fontWeight: '700',
+                  }}
+                >
+                  🎪
+                </div>
+
+                {/* Content */}
+                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+                  <div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#1A1A1A', margin: 0 }}>
+                      {event.title}
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#888888', margin: 0 }}>
+                      📍 {event.location}
+                    </p>
+                  </div>
+
+                  {/* Event Info */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                          color: '#6366F1',
+                        }}
+                      >
+                        {event.type}
+                      </span>
+                      <span style={{ fontSize: '13px', color: '#888888' }}>📅 {event.date}</span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#888888', margin: 0 }}>
+                      📊 {event.stands}
+                    </p>
+                  </div>
+
+                  {/* CTA */}
+                  <Link
+                    href="/events"
+                    style={{
+                      marginTop: 'auto',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      backgroundColor: '#F5F5F7',
+                      color: '#6366F1',
+                      textDecoration: 'none',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      transition: 'all 300ms ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#6366F1'
+                      e.currentTarget.style.color = '#FFFFFF'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#F5F5F7'
+                      e.currentTarget.style.color = '#6366F1'
+                    }}
+                  >
+                    Voir les détails
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* View All Events */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginTop: '64px' }}
+          >
+            <Link
+              href="/events"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '16px 32px',
+                borderRadius: '8px',
+                border: '2px solid #6366F1',
+                backgroundColor: 'transparent',
+                color: '#6366F1',
+                textDecoration: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                transition: 'all 300ms ease',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#6366F1'
+                e.currentTarget.style.color = '#FFFFFF'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#6366F1'
+              }}
+            >
+              Découvrir tous les événements
+              <ArrowRight size={20} />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Featured Creators Section */}
       <section
         style={{
