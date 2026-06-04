@@ -3,19 +3,29 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Mail, Lock, User, Users } from 'lucide-react'
+import { SmokeBackground } from '@/components/smoke-background'
 
 export default function RegisterPage() {
   return (
-    <div
-      style={{
-        minHeight: 'calc(100vh - 200px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        padding: '32px 16px',
-      }}
-    >
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
+      {/* Smoke Background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+        <SmokeBackground smokeColor="#6366F1" />
+      </div>
+
+      {/* Content Overlay */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '32px 16px',
+          backdropFilter: 'blur(0px)',
+        }}
+      >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -23,10 +33,12 @@ export default function RegisterPage() {
         style={{
           width: '100%',
           maxWidth: '420px',
-          borderRadius: '12px',
-          border: '1px solid #E5E7EB',
-          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
           padding: '40px',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
         }}
       >
         {/* Back Link */}
@@ -285,6 +297,7 @@ export default function RegisterPage() {
           </Link>
         </p>
       </motion.div>
+      </div>
     </div>
   )
 }
