@@ -405,6 +405,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Best Markets Section */}
+      <section
+        style={{
+          padding: '80px 16px',
+          backgroundColor: '#F9F9FB',
+          borderTop: '1px solid #E5E7EB',
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginBottom: '64px' }}
+          >
+            <h2 style={{ fontSize: '48px', fontWeight: '700', marginBottom: '16px', color: '#1A1A1A' }}>
+              Marchés & Événements à ne pas rater
+            </h2>
+            <p style={{ fontSize: '18px', color: '#888888', maxWidth: '600px', margin: '0 auto' }}>
+              Les meilleurs rendez-vous artisanaux en France cette année
+            </p>
+          </motion.div>
+
+          <ImageTestimonialGrid
+            items={[
+              {
+                name: 'Salon d\'Automne Créateurs',
+                title: 'Paris • 15-17 Nov 2024',
+                image: 'https://images.unsplash.com/photo-1469749292166-56156c16147f?w=500&h=700&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=10',
+                size: 'large',
+              },
+              {
+                name: 'Pop-up Marché Artisan',
+                title: 'Lyon • 1-3 Décembre',
+                image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=11',
+                size: 'medium',
+              },
+              {
+                name: 'Marché Permanent Bastille',
+                title: 'Paris • Chaque weekend',
+                image: 'https://images.unsplash.com/photo-1495576066350-f5f7ab7da3f8?w=400&h=400&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=12',
+                size: 'small',
+              },
+              {
+                name: 'Foire Métiers d\'Art',
+                title: 'Bordeaux • 5-8 Décembre',
+                image: 'https://images.unsplash.com/photo-1519167758993-c74ba48f8a84?w=400&h=400&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=13',
+                size: 'small',
+              },
+              {
+                name: 'Marché de Noel Premium',
+                title: 'Marseille • 1 Nov - 31 Dec',
+                image: 'https://images.unsplash.com/photo-1502882657612-449c28e3e055?w=400&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=14',
+                size: 'medium',
+              },
+              {
+                name: 'Festival des Créateurs',
+                title: 'Toulouse • 20-22 Octobre',
+                image: 'https://images.unsplash.com/photo-1479237916879-f9b06251a113?w=500&h=500&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=15',
+                size: 'large',
+              },
+            ]}
+            columns={3}
+          />
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section
         style={{
