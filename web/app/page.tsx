@@ -3,21 +3,23 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Users, MapPin, MessageSquare, Award, Zap, Heart } from 'lucide-react'
+import { AnimatedGradientBg } from '@/components/animated-gradient-bg'
 
 export default function Home() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
-      {/* Hero Section */}
-      <section
-        style={{
-          position: 'relative',
-          background: 'linear-gradient(135deg, #FFFFFF 0%, #F5F5F7 100%)',
-          paddingTop: '128px',
-          paddingBottom: '80px',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-        }}
-      >
+      {/* Hero Section with Animated Gradient */}
+      <AnimatedGradientBg>
+        <section
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            paddingTop: '128px',
+            paddingBottom: '80px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+          }}
+        >
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -191,6 +193,7 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      </AnimatedGradientBg>
 
       {/* Stats Section */}
       <section
