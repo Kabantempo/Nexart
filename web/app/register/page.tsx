@@ -2,67 +2,285 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { ArrowLeft, Mail, Lock, User, Users } from 'lucide-react'
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
+    <div
+      style={{
+        minHeight: 'calc(100vh - 200px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#FFFFFF',
+        padding: '32px 16px',
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md rounded-lg border border-slate-800 bg-slate-900/50 p-8"
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          borderRadius: '12px',
+          border: '1px solid #E5E7EB',
+          backgroundColor: '#FFFFFF',
+          padding: '40px',
+        }}
       >
-        <h1 className="text-2xl font-bold">Inscription</h1>
-        <p className="mt-2 text-slate-400">Créez votre compte Nexart</p>
+        {/* Back Link */}
+        <Link
+          href="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#6366F1',
+            textDecoration: 'none',
+            fontSize: '14px',
+            fontWeight: '600',
+            marginBottom: '32px',
+            transition: 'color 300ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#5B5BD6'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#6366F1'
+          }}
+        >
+          <ArrowLeft size={16} />
+          Retour
+        </Link>
 
-        <form className="mt-8 space-y-4">
+        {/* Header */}
+        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1A1A1A', marginBottom: '8px' }}>
+          Inscription
+        </h1>
+        <p style={{ fontSize: '16px', color: '#888888', marginBottom: '32px' }}>
+          Créez votre compte Nexart
+        </p>
+
+        {/* Form */}
+        <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium">Nom complet</label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1A1A1A',
+                marginBottom: '8px',
+              }}
+            >
+              <User size={16} color="#6366F1" />
+              Nom complet
+            </label>
             <input
               type="text"
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
               placeholder="Votre nom"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                fontFamily: 'inherit',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium">Email</label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1A1A1A',
+                marginBottom: '8px',
+              }}
+            >
+              <Mail size={16} color="#6366F1" />
+              Email
+            </label>
             <input
               type="email"
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
               placeholder="vous@exemple.fr"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                fontFamily: 'inherit',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             />
           </div>
 
+          {/* Role */}
           <div>
-            <label className="block text-sm font-medium">Vous êtes ?</label>
-            <select className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white focus:border-amber-500 focus:outline-none">
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1A1A1A',
+                marginBottom: '8px',
+              }}
+            >
+              <Users size={16} color="#6366F1" />
+              Vous êtes ?
+            </label>
+            <select
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                fontFamily: 'inherit',
+                cursor: 'pointer',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
               <option value="">Sélectionnez un rôle</option>
               <option value="creator">Créateur / Artisan</option>
               <option value="organizer">Organisateur</option>
             </select>
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-sm font-medium">Mot de passe</label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1A1A1A',
+                marginBottom: '8px',
+              }}
+            >
+              <Lock size={16} color="#6366F1" />
+              Mot de passe
+            </label>
             <input
               type="password"
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
               placeholder="••••••••"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                fontFamily: 'inherit',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
             />
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full rounded-lg bg-amber-500 px-4 py-2 font-semibold text-slate-950 hover:bg-amber-400 transition"
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              backgroundColor: '#6366F1',
+              color: '#FFFFFF',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 300ms ease',
+              marginTop: '8px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#5B5BD6'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#6366F1'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
           >
-            S'inscrire
+            Créer mon compte
           </button>
         </form>
 
-        <p className="mt-6 text-center text-slate-400">
-          Déjà inscrit ?{' '}
-          <Link href="/login" className="text-amber-500 hover:text-amber-400">
+        {/* Divider */}
+        <div style={{ marginTop: '32px', borderTop: '1px solid #E5E7EB' }} />
+
+        {/* Link */}
+        <p style={{ marginTop: '24px', fontSize: '14px', color: '#888888', textAlign: 'center', margin: 0 }}>
+          Vous avez déjà un compte ?{' '}
+          <Link
+            href="/login"
+            style={{
+              color: '#6366F1',
+              textDecoration: 'none',
+              fontWeight: '600',
+              transition: 'color 300ms ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#5B5BD6'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#6366F1'
+            }}
+          >
             Se connecter
           </Link>
         </p>

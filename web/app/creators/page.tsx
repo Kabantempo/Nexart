@@ -4,117 +4,200 @@ import { useCreators } from '@/lib/hooks'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
+import { MapPin, Users, ArrowRight, Search } from 'lucide-react'
+import { useState } from 'react'
 
 export default function CreatorsPage() {
   const { creators, loading, error } = useCreators()
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredCreators = creators.filter(
+    (creator) =>
+      creator.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      creator.bio?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="text-center">Chargement des créateurs...</div>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px', textAlign: 'center' }}>
+        <p style={{ color: '#888888', fontSize: '16px' }}>Chargement des créateurs...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="text-center text-red-500">Erreur : {error.message}</div>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px', textAlign: 'center' }}>
+        <p style={{ color: '#E05A5A', fontSize: '16px' }}>Erreur : {error.message}</p>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-4xl font-bold">Créateurs & Artisans</h1>
-        <p className="mt-4 text-lg text-slate-300">
-          Découvrez {creators.length} créateurs talentueux à travers la France
-        </p>
-      </motion.div>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 200px)' }}>
+      {/* Hero Section */}
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 16px 40px' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 style={{ fontSize: '48px', fontWeight: 700, color: '#1A1A1A', marginBottom: '16px' }}>
+            Créateurs & Artisans
+          </h1>
+          <p style={{ fontSize: '18px', color: '#888888', marginBottom: '32px', lineHeight: '1.6' }}>
+            Découvrez {filteredCreators.length} créateurs talentueux à travers la France
+          </p>
+        </motion.div>
 
-      <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {creators.map((creator, idx) => (
-          <motion.div
-            key={creator.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="group rounded-lg border border-slate-800 bg-slate-900/50 overflow-hidden hover:border-amber-500 transition"
-          >
-            <div className="aspect-square bg-slate-800 relative overflow-hidden">
-              {creator.avatar_url ? (
-                <Image
-                  src={creator.avatar_url}
-                  alt={creator.full_name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-slate-500">
-                  Pas d'image
-                </div>
-              )}
-            </div>
-
-            <div className="p-6">
-              <h3 className="text-lg font-semibold">{creator.full_name}</h3>
-
-              {creator.disciplines && creator.disciplines.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {creator.disciplines.slice(0, 3).map((discipline) => (
-                    <span
-                      key={discipline}
-                      className="rounded-full bg-amber-500/20 px-3 py-1 text-xs text-amber-400"
-                    >
-                      {discipline}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {creator.city && (
-                <p className="mt-4 text-sm text-slate-400">
-                  📍 {creator.city}, {creator.region}
-                </p>
-              )}
-
-              <div className="mt-6 flex gap-2">
-                {creator.instagram && (
-                  <a
-                    href={`https://instagram.com/${creator.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-amber-500 hover:text-amber-400 transition"
-                  >
-                    Instagram
-                  </a>
-                )}
-                {creator.website && (
-                  <a
-                    href={creator.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-amber-500 hover:text-amber-400 transition"
-                  >
-                    Site
-                  </a>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {creators.length === 0 && (
-        <div className="mt-12 text-center">
-          <p className="text-slate-400">Aucun créateur pour le moment. Revenez plus tard !</p>
+        {/* Search Bar */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Search
+              size={20}
+              color="#888888"
+              style={{ position: 'absolute', left: '12px', top: '12px' }}
+            />
+            <input
+              type="text"
+              placeholder="Rechercher un créateur..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px 12px 40px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            />
+          </div>
         </div>
-      )}
+
+        {/* Creators Grid */}
+        {filteredCreators.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+            {filteredCreators.map((creator, idx) => (
+              <motion.div
+                key={creator.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Link
+                  href={`/creators/${creator.id}`}
+                  style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    borderRadius: '12px',
+                    border: '1px solid #E5E7EB',
+                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF',
+                    transition: 'all 300ms ease',
+                    height: '100%',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#6366F1'
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(99, 102, 241, 0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#E5E7EB'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  {/* Avatar */}
+                  <div
+                    style={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      backgroundColor: '#F5F5F7',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    {creator.avatar_url ? (
+                      <Image
+                        src={creator.avatar_url}
+                        alt={creator.full_name}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
+                        }}
+                      >
+                        <Users size={48} color="#FFFFFF" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ padding: '20px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1A1A1A', marginBottom: '8px' }}>
+                      {creator.full_name}
+                    </h3>
+
+                    {creator.bio && (
+                      <p style={{ fontSize: '14px', color: '#888888', lineHeight: '1.5', marginBottom: '12px' }}>
+                        {creator.bio.substring(0, 80)}...
+                      </p>
+                    )}
+
+                    {/* Location & Badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      {creator.city && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={14} color="#6366F1" />
+                          <span style={{ fontSize: '12px', color: '#888888' }}>
+                            {creator.city}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        color: '#6366F1',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      Voir le profil <ArrowRight size={16} />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p style={{ fontSize: '16px', color: '#888888' }}>Aucun créateur trouvé</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

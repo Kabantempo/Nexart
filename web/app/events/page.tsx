@@ -4,115 +4,208 @@ import { useEvents } from '@/lib/hooks'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Calendar } from 'lucide-react'
+import { MapPin, Calendar, ArrowRight, Search } from 'lucide-react'
+import { useState } from 'react'
 
 export default function EventsPage() {
   const { events, loading, error } = useEvents()
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredEvents = events.filter(
+    (event) =>
+      event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="text-center">Chargement des événements...</div>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px', textAlign: 'center' }}>
+        <p style={{ color: '#888888', fontSize: '16px' }}>Chargement des événements...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="text-center text-red-500">Erreur : {error.message}</div>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px', textAlign: 'center' }}>
+        <p style={{ color: '#E05A5A', fontSize: '16px' }}>Erreur : {error.message}</p>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-4xl font-bold">Événements & Marchés</h1>
-        <p className="mt-4 text-lg text-slate-300">
-          Découvrez {events.length} événements artisanaux en France
-        </p>
-      </motion.div>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 200px)' }}>
+      {/* Hero Section */}
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 16px 40px' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 style={{ fontSize: '48px', fontWeight: 700, color: '#1A1A1A', marginBottom: '16px' }}>
+            Événements & Marchés
+          </h1>
+          <p style={{ fontSize: '18px', color: '#888888', marginBottom: '32px', lineHeight: '1.6' }}>
+            Découvrez {filteredEvents.length} événements artisanaux en France
+          </p>
+        </motion.div>
 
-      <div className="mt-12 space-y-6">
-        {events.map((event, idx) => (
-          <motion.div
-            key={event.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="group rounded-lg border border-slate-800 bg-slate-900/50 overflow-hidden hover:border-amber-500 transition"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
-              {event.cover_image ? (
-                <div className="relative aspect-video md:aspect-square rounded-lg overflow-hidden">
-                  <Image
-                    src={event.cover_image}
-                    alt={event.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition"
-                  />
-                </div>
-              ) : (
-                <div className="bg-slate-800 rounded-lg flex items-center justify-center text-slate-500">
-                  Pas d'image
-                </div>
-              )}
-
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-semibold">{event.title}</h3>
-
-                <div className="mt-4 flex flex-col gap-2 text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-amber-500" />
-                    <span>
-                      {event.city}, {event.region}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-amber-500" />
-                    <span>
-                      {new Date(event.start_date).toLocaleDateString('fr-FR')} -{' '}
-                      {new Date(event.end_date).toLocaleDateString('fr-FR')}
-                    </span>
-                  </div>
-                </div>
-
-                {event.theme && event.theme.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {event.theme.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-green-500/20 px-3 py-1 text-xs text-green-400"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <p className="mt-4 line-clamp-2 text-slate-400">{event.description}</p>
-
-                <div className="mt-6">
-                  <span className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 font-semibold text-slate-950 hover:bg-amber-400 transition">
-                    Voir les détails
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {events.length === 0 && (
-        <div className="mt-12 text-center">
-          <p className="text-slate-400">Aucun événement pour le moment. Revenez plus tard !</p>
+        {/* Search Bar */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Search
+              size={20}
+              color="#888888"
+              style={{ position: 'absolute', left: '12px', top: '12px' }}
+            />
+            <input
+              type="text"
+              placeholder="Rechercher un événement..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px 12px 40px',
+                borderRadius: '8px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                fontSize: '16px',
+                color: '#1A1A1A',
+                transition: 'all 300ms ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            />
+          </div>
         </div>
-      )}
+
+        {/* Events Grid */}
+        {filteredEvents.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            {filteredEvents.map((event, idx) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Link
+                  href={`/events/${event.id}`}
+                  style={{
+                    display: 'block',
+                    textDecoration: 'none',
+                    borderRadius: '12px',
+                    border: '1px solid #E5E7EB',
+                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF',
+                    transition: 'all 300ms ease',
+                    height: '100%',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#6366F1'
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(99, 102, 241, 0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#E5E7EB'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  {/* Cover Image */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      backgroundColor: '#F5F5F7',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    {event.cover_image ? (
+                      <Image
+                        src={event.cover_image}
+                        alt={event.title}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
+                        }}
+                      >
+                        <Calendar size={48} color="#FFFFFF" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ padding: '20px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1A1A1A', marginBottom: '8px' }}>
+                      {event.title}
+                    </h3>
+
+                    {/* Date & Location */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                      {event.start_date && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Calendar size={16} color="#6366F1" />
+                          <span style={{ fontSize: '14px', color: '#888888' }}>
+                            {new Date(event.start_date).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+                      )}
+                      {event.location && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <MapPin size={16} color="#6366F1" />
+                          <span style={{ fontSize: '14px', color: '#888888' }}>
+                            {event.location}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {event.description && (
+                      <p style={{ fontSize: '14px', color: '#888888', lineHeight: '1.5', marginBottom: '16px' }}>
+                        {event.description.substring(0, 100)}...
+                      </p>
+                    )}
+
+                    {/* CTA */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        color: '#6366F1',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      Voir plus <ArrowRight size={16} />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p style={{ fontSize: '16px', color: '#888888' }}>Aucun événement trouvé</p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

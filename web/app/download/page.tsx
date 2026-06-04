@@ -1,181 +1,252 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Download, Apple, MessageSquare } from 'lucide-react'
+import { Download, Apple, Smartphone } from 'lucide-react'
 
 export default function DownloadPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center"
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: 'calc(100vh - 200px)' }}>
+      {/* Hero */}
+      <div
+        style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '60px 16px',
+          textAlign: 'center',
+        }}
       >
-        <h1 className="text-4xl font-bold sm:text-5xl">Téléchargez Nexart</h1>
-        <p className="mt-4 text-xl text-slate-300">
-          Découvrez, candidatez et gérez vos événements artisanaux depuis votre téléphone
-        </p>
-      </motion.div>
-
-      {/* Platforms Grid */}
-      <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2">
-        {/* iOS */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-lg border border-slate-800 bg-slate-900/50 p-8"
+          transition={{ duration: 0.8 }}
         >
-          <Apple className="h-12 w-12 text-slate-300" />
-          <h2 className="mt-4 text-2xl font-semibold">iPhone & iPad</h2>
-          <p className="mt-2 text-slate-400">iOS 14.0 ou supérieur</p>
-
-          <div className="mt-8 space-y-3">
-            <a
-              href="#"
-              className="block w-full rounded-lg bg-amber-500 px-4 py-3 text-center font-semibold text-slate-950 hover:bg-amber-400 transition"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Download className="h-5 w-5" />
-                App Store
-              </div>
-            </a>
-            <p className="text-center text-sm text-slate-500">
-              Ou scannez le code QR
-            </p>
-          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>
+            Télécharger l'application Nexart
+          </h1>
+          <p style={{ fontSize: '18px', color: '#888888', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px' }}>
+            Accédez à tous les événements artisanaux directement sur votre téléphone
+          </p>
         </motion.div>
 
-        {/* Android */}
+        {/* Download Buttons */}
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '60px' }}>
+          <motion.a
+            href="#"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '16px 32px',
+              borderRadius: '8px',
+              backgroundColor: '#1A1A1A',
+              color: '#FFFFFF',
+              textDecoration: 'none',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 300ms ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2A2A2A'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(26, 26, 26, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#1A1A1A'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            <Apple size={20} />
+            App Store
+          </motion.a>
+
+          <motion.a
+            href="#"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '16px 32px',
+              borderRadius: '8px',
+              backgroundColor: '#1A1A1A',
+              color: '#FFFFFF',
+              textDecoration: 'none',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 300ms ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2A2A2A'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(26, 26, 26, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#1A1A1A'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            <Smartphone size={20} />
+            Google Play
+          </motion.a>
+        </div>
+
+        {/* Features */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '24px',
+            marginBottom: '60px',
+            borderTop: '1px solid #E5E7EB',
+            paddingTop: '60px',
+          }}
+        >
+          {[
+            {
+              title: 'Découvrez les marchés',
+              description: 'Trouvez les meilleurs événements artisanaux près de chez vous',
+              icon: '🗺️',
+            },
+            {
+              title: 'Candidatez facilement',
+              description: 'Postulez aux événements en un seul clic',
+              icon: '✅',
+            },
+            {
+              title: 'Communiquez en direct',
+              description: 'Échangez avec les organisateurs en temps réel',
+              icon: '💬',
+            },
+            {
+              title: 'Gérez vos candidatures',
+              description: 'Suivez l\'état de vos candidatures en temps réel',
+              icon: '📊',
+            },
+            {
+              title: 'Paiements sécurisés',
+              description: 'Réglez les stands directement dans l\'app',
+              icon: '💳',
+            },
+            {
+              title: 'Avis et notation',
+              description: 'Évaluez votre expérience après chaque événement',
+              icon: '⭐',
+            },
+          ].map((feature, idx) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: idx * 0.1 }}
+              viewport={{ once: true }}
+              style={{
+                padding: '24px',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                backgroundColor: '#FFFFFF',
+                transition: 'all 300ms ease',
+              }}
+              onMouseEnter={(e: any) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(99, 102, 241, 0.1)'
+              }}
+              onMouseLeave={(e: any) => {
+                e.currentTarget.style.borderColor = '#E5E7EB'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>
+                {feature.icon}
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1A1A1A', marginBottom: '8px' }}>
+                {feature.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#888888', lineHeight: '1.6' }}>
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Final CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-lg border border-slate-800 bg-slate-900/50 p-8"
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          style={{
+            padding: '40px',
+            borderRadius: '12px',
+            backgroundColor: '#F5F5F7',
+            border: '1px solid #E5E7EB',
+            textAlign: 'center',
+          }}
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded bg-green-500 font-bold text-white">
-            A
-          </div>
-          <h2 className="mt-4 text-2xl font-semibold">Android</h2>
-          <p className="mt-2 text-slate-400">Android 8.0 ou supérieur</p>
-
-          <div className="mt-8 space-y-3">
+          <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px' }}>
+            Rejoignez la communauté Nexart
+          </h2>
+          <p style={{ fontSize: '16px', color: '#888888', marginBottom: '24px' }}>
+            Téléchargez l'app et commencez à explorer les événements dès aujourd'hui
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a
               href="#"
-              className="block w-full rounded-lg bg-amber-500 px-4 py-3 text-center font-semibold text-slate-950 hover:bg-amber-400 transition"
+              style={{
+                padding: '12px 32px',
+                borderRadius: '8px',
+                backgroundColor: '#6366F1',
+                color: '#FFFFFF',
+                textDecoration: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 300ms ease',
+                display: 'inline-block',
+              }}
+              onMouseEnter={(e) => {
+                e.style.backgroundColor = '#5B5BD6'
+                e.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.2)'
+              }}
+              onMouseLeave={(e) => {
+                e.style.backgroundColor = '#6366F1'
+                e.style.boxShadow = 'none'
+              }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <Download className="h-5 w-5" />
-                Google Play
-              </div>
+              App Store
             </a>
-            <p className="text-center text-sm text-slate-500">
-              Ou scannez le code QR
-            </p>
+            <a
+              href="#"
+              style={{
+                padding: '12px 32px',
+                borderRadius: '8px',
+                backgroundColor: '#6366F1',
+                color: '#FFFFFF',
+                textDecoration: 'none',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 300ms ease',
+                display: 'inline-block',
+              }}
+              onMouseEnter={(e) => {
+                e.style.backgroundColor = '#5B5BD6'
+                e.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.2)'
+              }}
+              onMouseLeave={(e) => {
+                e.style.backgroundColor = '#6366F1'
+                e.style.boxShadow = 'none'
+              }}
+            >
+              Google Play
+            </a>
           </div>
         </motion.div>
       </div>
-
-      {/* Features */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-20 rounded-lg border border-slate-800 bg-slate-900/50 p-8"
-      >
-        <h2 className="text-2xl font-bold">Fonctionnalités principales</h2>
-
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <span className="text-lg font-bold text-amber-500">📍</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Découvrez les marchés</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                100+ marchés en France avec filtres avancés
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <span className="text-lg font-bold text-amber-500">📝</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Candidatez facilement</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Inscription en un clic avec message personnalisé
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <MessageSquare className="h-5 w-5 text-amber-500" />
-            </div>
-            <div>
-              <h3 className="font-semibold">Messagerie en temps réel</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Communiquez avec les organisateurs instantanément
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <span className="text-lg font-bold text-amber-500">💳</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Paiement Stripe</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Payez vos stands directement dans l'app
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <span className="text-lg font-bold text-amber-500">⭐</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Avis & évaluations</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Notez et commentez vos expériences
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
-              <span className="text-lg font-bold text-amber-500">🗺️</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Vue interactive</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Carte des événements proches de vous
-              </p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Help Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-16 text-center"
-      >
-        <h2 className="text-2xl font-bold">Des questions ?</h2>
-        <p className="mt-4 text-slate-300">
-          Contactez-nous à{' '}
-          <a href="mailto:hello@nexart.fr" className="text-amber-500 hover:text-amber-400">
-            hello@nexart.fr
-          </a>
-        </p>
-      </motion.div>
     </div>
   )
 }
