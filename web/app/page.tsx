@@ -162,61 +162,94 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              style={{ textAlign: 'center', marginTop: '80px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}
+              style={{ textAlign: 'center', marginTop: '80px', display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'center' }}
             >
-              <div>
-                <p style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '600', marginBottom: '24px' }}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <p style={{
+                  color: '#FFFFFF',
+                  fontSize: '32px',
+                  fontWeight: '700',
+                  marginBottom: '8px',
+                  background: 'linear-gradient(135deg, #FFFFFF 0%, #E5E7EB 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
                   Télécharger Nexart
                 </p>
-              </div>
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '16px',
+                  fontWeight: '400',
+                  marginTop: '8px',
+                }}>
+                  Disponible sur iOS et Android
+                </p>
+              </motion.div>
+              <div style={{ display: 'flex', gap: '28px', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
                 {/* App Store Button - Official Badge */}
-                <a
+                <motion.a
                   href="https://apps.apple.com/app/nexart/id6736595834"
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileHover={{ y: -8 }}
+                  transition={{ duration: 0.3 }}
                   style={{
                     display: 'inline-block',
-                    transition: 'transform 300ms ease',
                     cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
                   <img
                     src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1234567890"
                     alt="Télécharger sur l'App Store"
-                    style={{ height: '50px', width: 'auto' }}
+                    style={{
+                      height: '64px',
+                      width: 'auto',
+                      filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))',
+                      transition: 'filter 300ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.target as HTMLImageElement).style.filter = 'drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3))'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.target as HTMLImageElement).style.filter = 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))'
+                    }}
                   />
-                </a>
+                </motion.a>
 
                 {/* Google Play Button - Official Badge */}
-                <a
+                <motion.a
                   href="https://play.google.com/store/apps/details?id=com.nexart.app"
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileHover={{ y: -8 }}
+                  transition={{ duration: 0.3 }}
                   style={{
                     display: 'inline-block',
-                    transition: 'transform 300ms ease',
                     cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
                   <img
                     src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
                     alt="Télécharger sur Google Play"
-                    style={{ height: '50px', width: 'auto' }}
+                    style={{
+                      height: '64px',
+                      width: 'auto',
+                      filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))',
+                      transition: 'filter 300ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.target as HTMLImageElement).style.filter = 'drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3))'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.target as HTMLImageElement).style.filter = 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2))'
+                    }}
                   />
-                </a>
+                </motion.a>
               </div>
             </motion.div>
           </motion.div>
