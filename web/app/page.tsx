@@ -331,85 +331,11 @@ export default function Home() {
       </section>
       </section>
 
-      {/* Best Creators Section */}
-      <section
-        style={{
-          padding: '80px 16px',
-          backgroundColor: '#FFFFFF',
-          borderTop: '1px solid #E5E7EB',
-        }}
-      >
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            style={{ textAlign: 'center', marginBottom: '64px' }}
-          >
-            <h2 style={{ fontSize: '48px', fontWeight: '700', marginBottom: '16px', color: '#1A1A1A' }}>
-              Découvrez nos meilleurs créateurs
-            </h2>
-            <p style={{ fontSize: '18px', color: '#888888', maxWidth: '600px', margin: '0 auto' }}>
-              Les talents les plus en vue de la plateforme Nexart
-            </p>
-          </motion.div>
-
-          <ImageTestimonialGrid
-            items={[
-              {
-                name: 'Marie Dubois',
-                title: 'Céramiste & Sculptrice',
-                image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=700&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=1',
-                size: 'large',
-              },
-              {
-                name: 'Thomas Martin',
-                title: 'Tatoueur & Designer',
-                image: 'https://images.unsplash.com/photo-1578814050033-9c499bb9a3a7?w=400&h=600&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=2',
-                size: 'medium',
-              },
-              {
-                name: 'Sophie Laurent',
-                title: 'Joaillière',
-                image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=3',
-                size: 'small',
-              },
-              {
-                name: 'Julien Beaumont',
-                title: 'Graveur & Artisan',
-                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=4',
-                size: 'small',
-              },
-              {
-                name: 'Elena Rodriguez',
-                title: 'Textile & Mode',
-                image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=5',
-                size: 'medium',
-              },
-              {
-                name: 'Marc Leclerc',
-                title: 'Bois & Menuiserie',
-                image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop',
-                avatar: 'https://i.pravatar.cc/150?img=6',
-                size: 'large',
-              },
-            ]}
-            columns={3}
-          />
-        </div>
-      </section>
-
       {/* Best Markets Section */}
       <section
         style={{
           padding: '80px 16px',
-          backgroundColor: '#F9F9FB',
+          backgroundColor: '#FFFFFF',
           borderTop: '1px solid #E5E7EB',
         }}
       >
@@ -471,6 +397,80 @@ export default function Home() {
                 title: 'Toulouse • 20-22 Octobre',
                 image: 'https://images.unsplash.com/photo-1479237916879-f9b06251a113?w=500&h=500&fit=crop',
                 avatar: 'https://i.pravatar.cc/150?img=15',
+                size: 'large',
+              },
+            ]}
+            columns={3}
+          />
+        </div>
+      </section>
+
+      {/* Best Creators Section */}
+      <section
+        style={{
+          padding: '80px 16px',
+          backgroundColor: '#F9F9FB',
+          borderTop: '1px solid #E5E7EB',
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginBottom: '64px' }}
+          >
+            <h2 style={{ fontSize: '48px', fontWeight: '700', marginBottom: '16px', color: '#1A1A1A' }}>
+              Découvrez nos meilleurs créateurs
+            </h2>
+            <p style={{ fontSize: '18px', color: '#888888', maxWidth: '600px', margin: '0 auto' }}>
+              Les talents les plus en vue de la plateforme Nexart
+            </p>
+          </motion.div>
+
+          <ImageTestimonialGrid
+            items={[
+              {
+                name: 'Marie Dubois',
+                title: 'Céramiste & Sculptrice',
+                image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=700&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=1',
+                size: 'large',
+              },
+              {
+                name: 'Thomas Martin',
+                title: 'Tatoueur & Designer',
+                image: 'https://images.unsplash.com/photo-1578814050033-9c499bb9a3a7?w=400&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=2',
+                size: 'medium',
+              },
+              {
+                name: 'Sophie Laurent',
+                title: 'Joaillière',
+                image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=3',
+                size: 'small',
+              },
+              {
+                name: 'Julien Beaumont',
+                title: 'Graveur & Artisan',
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=4',
+                size: 'small',
+              },
+              {
+                name: 'Elena Rodriguez',
+                title: 'Textile & Mode',
+                image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=5',
+                size: 'medium',
+              },
+              {
+                name: 'Marc Leclerc',
+                title: 'Bois & Menuiserie',
+                image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=500&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=6',
                 size: 'large',
               },
             ]}
