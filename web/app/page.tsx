@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Users, MapPin, MessageSquare, Award, Zap, Heart } from 'lucide-react'
 import { SmokeBackground } from '@/components/smoke-background'
+import { MasonryGrid } from '@/components/masonry-grid'
 
 export default function Home() {
   return (
@@ -330,6 +331,158 @@ export default function Home() {
       </section>
       </section>
 
+      {/* Best Creators Section */}
+      <section
+        style={{
+          padding: '80px 16px',
+          backgroundColor: '#FFFFFF',
+          borderTop: '1px solid #E5E7EB',
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginBottom: '64px' }}
+          >
+            <h2 style={{ fontSize: '48px', fontWeight: '700', marginBottom: '16px', color: '#1A1A1A' }}>
+              Découvrez nos meilleurs créateurs
+            </h2>
+            <p style={{ fontSize: '18px', color: '#888888', maxWidth: '600px', margin: '0 auto' }}>
+              Les talents les plus en vue de la plateforme Nexart
+            </p>
+          </motion.div>
+
+          <MasonryGrid columns={3} gap={4} style={{ width: '100%' }}>
+            {[
+              {
+                name: 'Marie Dubois',
+                title: 'Céramiste & Sculptrice',
+                image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=1',
+              },
+              {
+                name: 'Thomas Martin',
+                title: 'Tatoueur & Designer',
+                image: 'https://images.unsplash.com/photo-1578814050033-9c499bb9a3a7?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=2',
+              },
+              {
+                name: 'Sophie Laurent',
+                title: 'Joaillière',
+                image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=3',
+              },
+              {
+                name: 'Julien Beaumont',
+                title: 'Graveur & Artisan',
+                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=4',
+              },
+              {
+                name: 'Elena Rodriguez',
+                title: 'Textile & Mode',
+                image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=5',
+              },
+              {
+                name: 'Marc Leclerc',
+                title: 'Bois & Menuiserie',
+                image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=600&fit=crop',
+                avatar: 'https://i.pravatar.cc/150?img=6',
+              },
+            ].map((creator, idx) => (
+              <div
+                key={idx}
+                style={{
+                  position: 'relative',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLElement).style.transform = 'scale(1)'
+                }}
+              >
+                <img
+                  src={creator.image}
+                  alt={creator.name}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    transition: 'transform 300ms ease',
+                  }}
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop'
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '20px',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <img
+                      src={creator.avatar}
+                      alt={creator.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        border: '2px solid #FFFFFF',
+                      }}
+                    />
+                    <div>
+                      <p style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>{creator.name}</p>
+                      <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: 0 }}>{creator.title}</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/creators"
+                    style={{
+                      display: 'inline-block',
+                      padding: '8px 16px',
+                      backgroundColor: 'rgba(99, 102, 241, 0.9)',
+                      color: '#FFFFFF',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                      transition: 'background-color 300ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#6366F1'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'rgba(99, 102, 241, 0.9)'
+                    }}
+                  >
+                    Voir le profil
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </MasonryGrid>
+        </div>
+      </section>
 
       {/* Stats Section */}
       <section
