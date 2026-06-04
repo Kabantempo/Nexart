@@ -295,7 +295,7 @@ export default function Home() {
                     cursor: 'pointer',
                     transition: 'transform 300ms ease',
                     minWidth: '180px',
-                    minHeight: '60px',
+                    minHeight: '70px',
                   }}
                   onMouseEnter={(e) => {
                     ;(e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-8px)'
@@ -308,7 +308,7 @@ export default function Home() {
                     src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
                     alt="Télécharger sur Google Play"
                     style={{
-                      height: '60px',
+                      height: '70px',
                       width: 'auto',
                       display: 'block',
                       filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))',
