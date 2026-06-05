@@ -15,7 +15,6 @@ Plateforme double-sided de mise en relation entre créateurs/artisans et marché
 | Couche | Technologie |
 |--------|------------|
 | Mobile (iOS + Android) | React Native + Expo SDK 54 |
-| Site web | HTML/CSS/JS vanilla (`website/index.html`) |
 | Backend | Supabase (PostgreSQL + Auth + Storage + Realtime) |
 | Paiements | Stripe Connect (stands payants) |
 | Navigation | React Navigation v7 (bottom tabs + stack) |
@@ -45,8 +44,6 @@ nexart/
 │   ├── types/                # Tous les types TS (Profile, Event, Application…)
 │   ├── utils/                # Helpers (formatDate, distanceLabel…)
 │   └── constants/            # theme.ts (couleurs, spacing, typo)
-├── website/
-│   └── index.html            # Landing page marketing
 ├── assets/
 ├── App.tsx
 └── CLAUDE.md
@@ -233,7 +230,6 @@ Style : artisanal moderne, chaud, authentique — pas corporate.
 npx expo start          # App mobile
 npx expo start --web    # Version web
 npx tsc --noEmit        # Check TypeScript
-cd website && npx serve . -p 3000  # Site marketing
 ```
 
 ## Variables d'environnement (`.env`)
