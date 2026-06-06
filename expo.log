@@ -1,0 +1,14 @@
+
+> nexart@1.0.0 web
+> expo start --web
+
+env: load .env
+env: export EXPO_PUBLIC_DEMO_MODE EXPO_PUBLIC_STRIPE_KEY EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL
+Starting project at C:\Users\mini-pc-01\Documents\code\nexart
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+An update for expo is available: 56.0.8 → ~56.0.9
+18 other packages may need updating. Run npx expo install --check for details.
+Logs for your project will appear below.
+› Detected a change in metro.config.js. Restart the server to see the new results.
