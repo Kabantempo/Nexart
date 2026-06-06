@@ -13,10 +13,9 @@ config.resolver = {
   ],
 };
 
-// Only watch src and app directories
+// Only watch src directory (no Expo Router app/ folder in this project)
 config.watchFolders = [
   path.join(__dirname, 'src'),
-  path.join(__dirname, 'app'),
   path.join(__dirname, 'node_modules'),
 ];
 

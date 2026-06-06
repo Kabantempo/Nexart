@@ -1,0 +1,16 @@
+node_modules
+.git
+.expo
+.claude
+dist
+web
+*.log
+*.bat
+*.sh
+scripts
+launch-expo.*
+LAUNCH*
+AUDIT*
+CLAUDE*
+AGENTS*
+NEXART_PERPLEXITY*

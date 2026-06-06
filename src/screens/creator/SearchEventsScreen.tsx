@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View, Text, TextInput, StyleSheet, FlatList,
   TouchableOpacity, ActivityIndicator, ScrollView,
+  Image, Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -12,323 +13,451 @@ import { Event, EventType, DISCIPLINE_TAGS } from '../../types';
 import { colors, spacing, typography, radius } from '../../constants/theme';
 
 type Props = { navigation: StackNavigationProp<MarketStackParams, 'EventList'> };
-
 type BudgetPreset = 'all' | 'free' | 'under50' | '50to150' | 'over150';
 type DatePreset   = 'all' | 'weekend' | 'month' | 'soon';
 
+
 const FRENCH_REGIONS = [
-  'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Bretagne',
-  'Centre-Val de Loire', 'Corse', 'Grand Est', 'Hauts-de-France',
-  'Île-de-France', 'Normandie', 'Nouvelle-Aquitaine', 'Occitanie',
-  'Pays de la Loire', "Provence-Alpes-Côte d'Azur",
+  'Auvergne-Rhône-Alpes','Bourgogne-Franche-Comté','Bretagne',
+  'Centre-Val de Loire','Corse','Grand Est','Hauts-de-France',
+  'Île-de-France','Normandie','Nouvelle-Aquitaine','Occitanie',
+  'Pays de la Loire',"Provence-Alpes-Côte d'Azur",
 ];
 
 const BUDGET_OPTIONS: { label: string; short: string; value: BudgetPreset }[] = [
-  { label: 'Tous les budgets', short: 'Budget', value: 'all' },
-  { label: 'Gratuit',          short: 'Gratuit', value: 'free' },
-  { label: 'Moins de 50 €',   short: '< 50 €',  value: 'under50' },
-  { label: '50 – 150 €',       short: '50-150 €', value: '50to150' },
-  { label: 'Plus de 150 €',   short: '> 150 €', value: 'over150' },
+  { label: 'Tous les budgets', short: 'Budget',   value: 'all' },
+  { label: 'Gratuit',          short: 'Gratuit',  value: 'free' },
+  { label: 'Moins de 50 €',   short: '< 50 €',   value: 'under50' },
+  { label: '50 – 150 €',       short: '50–150 €', value: '50to150' },
+  { label: 'Plus de 150 €',   short: '> 150 €',  value: 'over150' },
 ];
 
 const DATE_OPTIONS: { label: string; short: string; value: DatePreset }[] = [
-  { label: 'Toutes les dates', short: 'Date',          value: 'all' },
-  { label: 'Ce week-end',      short: 'Ce week-end',   value: 'weekend' },
-  { label: 'Ce mois-ci',       short: 'Ce mois',       value: 'month' },
-  { label: 'Prochainement',    short: 'Prochainement', value: 'soon' },
+  { label: 'Toutes les dates', short: 'Date',         value: 'all' },
+  { label: 'Ce week-end',      short: 'Ce week-end',  value: 'weekend' },
+  { label: 'Ce mois-ci',       short: 'Ce mois',      value: 'month' },
+  { label: 'Prochainement',    short: 'Bientôt',      value: 'soon' },
 ];
 
-const EVENT_TYPES: { label: string; value: EventType | 'all' }[] = [
-  { label: 'Tous',       value: 'all' },
-  { label: 'Pop-up',     value: 'popup' },
-  { label: 'Salon',      value: 'salon' },
-  { label: 'Foire',      value: 'fair' },
-  { label: 'Permanent',  value: 'permanent' },
-  { label: 'Saisonnier', value: 'seasonal' },
+const EVENT_TYPES: { label: string; icon: string; value: EventType | 'all' }[] = [
+  { label: 'Tous',       icon: '✦', value: 'all' },
+  { label: 'Pop-up',     icon: '⚡', value: 'popup' },
+  { label: 'Salon',      icon: '🏛', value: 'salon' },
+  { label: 'Foire',      icon: '🎪', value: 'fair' },
+  { label: 'Permanent',  icon: '🏠', value: 'permanent' },
+  { label: 'Saisonnier', icon: '🌿', value: 'seasonal' },
 ];
 
-const TYPE_COLORS: Record<string, string> = {
-  permanent: '#3B82F6', seasonal: '#F59E0B',
-  popup: '#A855F7', salon: '#10B981', fair: '#EF4444',
+const TYPE_CONFIG: Record<string, { color: string; gradient: [string, string] }> = {
+  permanent:  { color: '#3B82F6', gradient: ['#1D4ED8', '#3B82F6'] },
+  seasonal:   { color: '#F59E0B', gradient: ['#D97706', '#FBBF24'] },
+  popup:      { color: '#A855F7', gradient: ['#7C3AED', '#A855F7'] },
+  salon:      { color: '#10B981', gradient: ['#059669', '#10B981'] },
+  fair:       { color: '#EF4444', gradient: ['#DC2626', '#F87171'] },
 };
 
-// ─── Helpers date ─────────────────────────────────────────────────────────────
+const DEFAULT_CONFIG = { color: colors.primary, gradient: ['#4F46E5', '#6366F1'] as [string, string] };
 
 function toIso(d: Date) { return d.toISOString().split('T')[0]; }
 
-function getDateRange(preset: DatePreset): { from: string; to: string } | null {
-  if (preset === 'all') return null;
-  const today = new Date();
-  if (preset === 'weekend') {
-    const day = today.getDay();
-    const daysToSat = day === 6 ? 0 : (6 - day + 7) % 7 || 7;
-    const sat = new Date(today); sat.setDate(today.getDate() + daysToSat);
-    const sun = new Date(sat);   sun.setDate(sat.getDate() + 1);
+function getDateRange(p: DatePreset) {
+  if (p === 'all') return null;
+  const t = new Date();
+  if (p === 'weekend') {
+    const day = t.getDay();
+    const sat = new Date(t); sat.setDate(t.getDate() + ((6 - day + 7) % 7 || 7));
+    const sun = new Date(sat); sun.setDate(sat.getDate() + 1);
     return { from: toIso(sat), to: toIso(sun) };
   }
-  if (preset === 'month') {
-    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return { from: toIso(today), to: toIso(last) };
+  if (p === 'month') {
+    return { from: toIso(t), to: toIso(new Date(t.getFullYear(), t.getMonth() + 1, 0)) };
   }
-  // soon = 30 jours
-  const in30 = new Date(today); in30.setDate(today.getDate() + 30);
-  return { from: toIso(today), to: toIso(in30) };
+  const in30 = new Date(t); in30.setDate(t.getDate() + 30);
+  return { from: toIso(t), to: toIso(in30) };
 }
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
-// ─── Event card ───────────────────────────────────────────────────────────────
+function isNew(d: string) {
+  return (Date.now() - new Date(d).getTime()) < 7 * 24 * 3600 * 1000;
+}
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
 
 function EventCard({ event, onPress }: { event: Event; onPress: () => void }) {
-  const accent = TYPE_COLORS[event.event_type] ?? colors.primary;
+  const cfg = TYPE_CONFIG[event.event_type] ?? DEFAULT_CONFIG;
+  const multiDay = event.start_date !== event.end_date;
+
   return (
-    <TouchableOpacity style={[s.card, { borderLeftColor: accent }]} onPress={onPress} activeOpacity={0.8}>
-      <View style={s.cardTop}>
-        <View style={[s.typePill, { backgroundColor: accent + '18' }]}>
-          <Text style={[s.typePillText, { color: accent }]}>{event.event_type}</Text>
-        </View>
-        {event.stand_price != null && (
-          <Text style={s.price}>
-            {event.stand_price === 0 ? 'Gratuit' : `${event.stand_price} €`}
-          </Text>
+    <TouchableOpacity style={card.wrap} onPress={onPress} activeOpacity={0.92}>
+      {/* Header visuel */}
+      <View style={card.header}>
+        {event.cover_image ? (
+          <Image source={{ uri: event.cover_image }} style={card.coverImg} resizeMode="cover" />
+        ) : (
+          <View style={[card.gradient, { backgroundColor: cfg.color }]}>
+            <View style={card.gradientOverlay} />
+            <Text style={card.gradientLabel}>{event.title.slice(0, 2).toUpperCase()}</Text>
+          </View>
         )}
-      </View>
 
-      <Text style={s.cardTitle} numberOfLines={2}>{event.title}</Text>
-
-      <Text style={s.cardMeta}>
-        {event.city ?? '—'}  ·  {formatDate(event.start_date)}
-        {event.start_date !== event.end_date ? ` → ${formatDate(event.end_date)}` : ''}
-      </Text>
-
-      {event.discipline_tags.length > 0 && (
-        <View style={s.tagRow}>
-          {event.discipline_tags.slice(0, 3).map(t => (
-            <View key={t} style={s.tag}><Text style={s.tagText}>{t}</Text></View>
-          ))}
-          {event.discipline_tags.length > 3 && (
-            <Text style={s.tagMore}>+{event.discipline_tags.length - 3}</Text>
+        {/* Badges header */}
+        <View style={card.headerBadges}>
+          <View style={[card.typeBadge, { backgroundColor: cfg.color }]}>
+            <Text style={card.typeBadgeText}>{event.event_type.toUpperCase()}</Text>
+          </View>
+          {event.stand_price != null && (
+            <View style={card.priceBadge}>
+              <Text style={card.priceBadgeText}>
+                {event.stand_price === 0 ? 'Gratuit' : `${event.stand_price} €`}
+              </Text>
+            </View>
+          )}
+          {isNew(event.created_at) && (
+            <View style={card.newBadge}><Text style={card.newBadgeText}>NEW</Text></View>
           )}
         </View>
-      )}
+      </View>
 
-      <View style={s.cardFooter}>
-        <Text style={s.stands}>{event.stand_count} stands disponibles</Text>
-        <View style={[s.ctaPill, { backgroundColor: accent + '18' }]}>
-          <Text style={[s.ctaText, { color: accent }]}>Voir →</Text>
+      {/* Body */}
+      <View style={card.body}>
+        <Text style={card.title} numberOfLines={2}>{event.title}</Text>
+
+        <View style={card.metaRow}>
+          <View style={card.metaItem}>
+            <Ionicons name="location-outline" size={12} color={colors.text.secondary} />
+            <Text style={card.metaText} numberOfLines={1}>{event.city ?? '—'}</Text>
+          </View>
+          <View style={card.metaDot} />
+          <View style={card.metaItem}>
+            <Ionicons name="calendar-outline" size={12} color={colors.text.secondary} />
+            <Text style={card.metaText}>
+              {formatDate(event.start_date)}
+              {multiDay ? ` → ${formatDate(event.end_date)}` : ''}
+            </Text>
+          </View>
+        </View>
+
+        {event.discipline_tags.length > 0 && (
+          <View style={card.tagRow}>
+            {event.discipline_tags.slice(0, 3).map(t => (
+              <View key={t} style={card.tag}>
+                <Text style={card.tagText}>{t}</Text>
+              </View>
+            ))}
+            {event.discipline_tags.length > 3 && (
+              <Text style={card.tagMore}>+{event.discipline_tags.length - 3}</Text>
+            )}
+          </View>
+        )}
+
+        <View style={card.footer}>
+          <View style={card.standsRow}>
+            <Ionicons name="grid-outline" size={12} color={colors.text.secondary} />
+            <Text style={card.standsText}>{event.stand_count ?? '—'} stands</Text>
+          </View>
+          <View style={[card.cta, { backgroundColor: cfg.color + '18' }]}>
+            <Text style={[card.ctaText, { color: cfg.color }]}>Postuler</Text>
+            <Ionicons name="arrow-forward" size={12} color={cfg.color} />
+          </View>
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
-// ─── Discipline sheet ─────────────────────────────────────────────────────────
+const CARD_H = 100;
+const card = StyleSheet.create({
+  wrap: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.border,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+  },
+  header:        { height: CARD_H, overflow: 'hidden' },
+  coverImg:      { width: '100%', height: '100%' },
+  gradient:        { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  gradientOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
+  gradientLabel:   { fontSize: 32, fontWeight: '800', color: 'rgba(255,255,255,0.35)', letterSpacing: 4 },
+  headerBadges:  { position: 'absolute', top: spacing.sm, left: spacing.sm, right: spacing.sm, flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
+  typeBadge:     { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radius.full },
+  typeBadgeText: { ...typography.caption, color: '#fff', fontWeight: '800', fontSize: 9, letterSpacing: 0.8 },
+  priceBadge:    { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radius.full, backgroundColor: 'rgba(0,0,0,0.55)' },
+  priceBadgeText:{ ...typography.caption, color: '#fff', fontWeight: '700' },
+  newBadge:      { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radius.full, backgroundColor: '#F59E0B' },
+  newBadgeText:  { ...typography.caption, color: '#fff', fontWeight: '800', fontSize: 9, letterSpacing: 0.8 },
 
-function DisciplineFilterSheet({ selected, onChange, onClose }: {
-  selected: string[]; onChange: (v: string[]) => void; onClose: () => void;
+  body:     { padding: spacing.md },
+  title:    { ...typography.h3, color: colors.text.primary, fontWeight: '700', marginBottom: spacing.xs },
+  metaRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1 },
+  metaDot:  { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.border },
+  metaText: { ...typography.caption, color: colors.text.secondary, flex: 1 },
+  tagRow:   { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm },
+  tag:      { borderWidth: 1, borderColor: colors.border, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 3, backgroundColor: colors.background },
+  tagText:  { ...typography.caption, color: colors.text.secondary, fontSize: 11 },
+  tagMore:  { ...typography.caption, color: colors.text.secondary, alignSelf: 'center' },
+  footer:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  standsRow:  { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  standsText: { ...typography.caption, color: colors.text.secondary },
+  cta:        { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.full },
+  ctaText:    { ...typography.caption, fontWeight: '700' },
+});
+
+// ─── Active filter chip ───────────────────────────────────────────────────────
+
+function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <TouchableOpacity style={fc.chip} onPress={onRemove} activeOpacity={0.8}>
+      <Text style={fc.chipText} numberOfLines={1}>{label}</Text>
+      <Ionicons name="close" size={11} color={colors.primary} />
+    </TouchableOpacity>
+  );
+}
+
+const fc = StyleSheet.create({
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: colors.primary + '15',
+    borderRadius: radius.full, borderWidth: 1, borderColor: colors.primary + '40',
+    paddingHorizontal: spacing.sm, paddingVertical: 5,
+  },
+  chipText: { ...typography.caption, color: colors.primary, fontWeight: '600', maxWidth: 120 },
+});
+
+// ─── Filters bottom sheet ─────────────────────────────────────────────────────
+
+interface FilterValues {
+  disciplines: string[];
+  region: string | null;
+  budget: BudgetPreset;
+  date: DatePreset;
+}
+
+function FiltersSheet({
+  visible, values, onApply, onClose,
+}: {
+  visible: boolean;
+  values: FilterValues;
+  onApply: (v: FilterValues) => void;
+  onClose: () => void;
 }) {
-  const [local, setLocal] = useState(selected);
-  const toggle = (tag: string) => setLocal(p => p.includes(tag) ? p.filter(t => t !== tag) : [...p, tag]);
+  const [local, setLocal] = useState<FilterValues>(values);
+  const set = <K extends keyof FilterValues>(k: K, v: FilterValues[K]) =>
+    setLocal(p => ({ ...p, [k]: v }));
+
+  const toggleDisc = (t: string) =>
+    set('disciplines', local.disciplines.includes(t)
+      ? local.disciplines.filter(d => d !== t)
+      : [...local.disciplines, t]);
+
+  const reset = () => setLocal({ disciplines: [], region: null, budget: 'all', date: 'all' });
+
+  const activeCount = [
+    local.disciplines.length > 0,
+    local.region !== null,
+    local.budget !== 'all',
+    local.date !== 'all',
+  ].filter(Boolean).length;
 
   return (
-    <View style={sheet.overlay}>
-      <View style={sheet.panel}>
-        <View style={sheet.handle} />
-        <Text style={sheet.title}>Filtrer par discipline</Text>
-        <ScrollView contentContainerStyle={sheet.tagWrap}>
-          {DISCIPLINE_TAGS.map(t => {
-            const active = local.includes(t);
-            return (
-              <TouchableOpacity key={t} style={[sheet.tag, active && sheet.tagActive]} onPress={() => toggle(t)}>
-                <Text style={[sheet.tagText, active && sheet.tagTextActive]}>{t}</Text>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View style={fs.overlay}>
+        <TouchableOpacity style={fs.backdrop} onPress={onClose} />
+        <View style={fs.panel}>
+          <View style={fs.handle} />
+
+          {/* Header */}
+          <View style={fs.header}>
+            <Text style={fs.title}>Filtres</Text>
+            <TouchableOpacity onPress={reset}>
+              <Text style={fs.resetAll}>Tout effacer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+
+            {/* ── Date ── */}
+            <Text style={fs.sectionTitle}>📅  Date</Text>
+            <View style={fs.pillRow}>
+              {DATE_OPTIONS.map(o => (
+                <TouchableOpacity
+                  key={o.value}
+                  style={[fs.pill, local.date === o.value && fs.pillActive]}
+                  onPress={() => set('date', o.value)}
+                >
+                  <Text style={[fs.pillText, local.date === o.value && fs.pillTextActive]}>{o.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ── Budget ── */}
+            <Text style={fs.sectionTitle}>💰  Budget stand</Text>
+            <View style={fs.pillRow}>
+              {BUDGET_OPTIONS.map(o => (
+                <TouchableOpacity
+                  key={o.value}
+                  style={[fs.pill, local.budget === o.value && fs.pillActive]}
+                  onPress={() => set('budget', o.value)}
+                >
+                  <Text style={[fs.pillText, local.budget === o.value && fs.pillTextActive]}>{o.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ── Région ── */}
+            <Text style={fs.sectionTitle}>📍  Région</Text>
+            <View style={fs.pillRow}>
+              <TouchableOpacity
+                style={[fs.pill, local.region === null && fs.pillActive]}
+                onPress={() => set('region', null)}
+              >
+                <Text style={[fs.pillText, local.region === null && fs.pillTextActive]}>Toutes</Text>
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-        <View style={sheet.actions}>
-          <TouchableOpacity style={sheet.btnReset} onPress={() => { setLocal([]); onChange([]); onClose(); }}>
-            <Text style={sheet.btnResetText}>Réinitialiser</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={sheet.btnApply} onPress={() => { onChange(local); onClose(); }}>
-            <Text style={sheet.btnApplyText}>Appliquer {local.length > 0 ? `(${local.length})` : ''}</Text>
+              {FRENCH_REGIONS.map(r => (
+                <TouchableOpacity
+                  key={r}
+                  style={[fs.pill, local.region === r && fs.pillActive]}
+                  onPress={() => set('region', r)}
+                >
+                  <Text style={[fs.pillText, local.region === r && fs.pillTextActive]} numberOfLines={1}>{r}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ── Disciplines ── */}
+            <Text style={fs.sectionTitle}>🎨  Disciplines</Text>
+            <View style={fs.pillRow}>
+              {DISCIPLINE_TAGS.map(t => {
+                const active = local.disciplines.includes(t);
+                return (
+                  <TouchableOpacity
+                    key={t}
+                    style={[fs.pill, active && fs.pillActivePurple]}
+                    onPress={() => toggleDisc(t)}
+                  >
+                    <Text style={[fs.pillText, active && fs.pillTextActive]}>{t}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+          </ScrollView>
+
+          {/* Apply button */}
+          <TouchableOpacity
+            style={[fs.applyBtn, activeCount === 0 && { opacity: 0.6 }]}
+            onPress={() => { onApply(local); onClose(); }}
+          >
+            <Text style={fs.applyBtnText}>
+              {activeCount > 0 ? `Appliquer (${activeCount} filtre${activeCount > 1 ? 's' : ''})` : 'Appliquer'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Modal>
   );
 }
 
-// ─── Région sheet ─────────────────────────────────────────────────────────────
+const fs = StyleSheet.create({
+  overlay:   { flex: 1 },
+  backdrop:  { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
+  panel: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
+    padding: spacing.xl, maxHeight: '88%',
+  },
+  handle:    { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: spacing.lg },
+  header:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg },
+  title:     { ...typography.h3, color: colors.text.primary, fontWeight: '700' },
+  resetAll:  { ...typography.caption, color: colors.error, fontWeight: '600' },
 
-function RegionFilterSheet({ selected, onChange, onClose }: {
-  selected: string | null; onChange: (v: string | null) => void; onClose: () => void;
-}) {
-  return (
-    <View style={sheet.overlay}>
-      <View style={sheet.panel}>
-        <View style={sheet.handle} />
-        <Text style={sheet.title}>Filtrer par région</Text>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <TouchableOpacity style={sheet.radioRow} onPress={() => { onChange(null); onClose(); }}>
-            <Text style={[sheet.radioLabel, selected === null && sheet.radioLabelActive]}>Toutes les régions</Text>
-            {selected === null && <Ionicons name="checkmark" size={16} color={colors.primary} />}
-          </TouchableOpacity>
-          {FRENCH_REGIONS.map(r => (
-            <TouchableOpacity key={r} style={sheet.radioRow} onPress={() => { onChange(r); onClose(); }}>
-              <Text style={[sheet.radioLabel, selected === r && sheet.radioLabelActive]}>{r}</Text>
-              {selected === r && <Ionicons name="checkmark" size={16} color={colors.primary} />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  );
-}
+  sectionTitle: { ...typography.label, color: colors.text.secondary, textTransform: 'uppercase', letterSpacing: 0.8, fontSize: 11, marginBottom: spacing.sm, marginTop: spacing.lg },
+  pillRow:   { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  pill: {
+    paddingHorizontal: spacing.md, paddingVertical: 8,
+    borderRadius: radius.full, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  pillActive:       { backgroundColor: colors.primary, borderColor: colors.primary },
+  pillActivePurple: { backgroundColor: '#7C3AED', borderColor: '#7C3AED' },
+  pillText:         { ...typography.caption, color: colors.text.secondary, fontWeight: '500' },
+  pillTextActive:   { color: '#fff', fontWeight: '700' },
 
-// ─── Budget sheet ─────────────────────────────────────────────────────────────
-
-function BudgetFilterSheet({ selected, onChange, onClose }: {
-  selected: BudgetPreset; onChange: (v: BudgetPreset) => void; onClose: () => void;
-}) {
-  return (
-    <View style={sheet.overlay}>
-      <View style={[sheet.panel, { maxHeight: '50%' }]}>
-        <View style={sheet.handle} />
-        <Text style={sheet.title}>Filtrer par budget</Text>
-        {BUDGET_OPTIONS.map(opt => (
-          <TouchableOpacity key={opt.value} style={sheet.radioRow} onPress={() => { onChange(opt.value); onClose(); }}>
-            <Text style={[sheet.radioLabel, selected === opt.value && sheet.radioLabelActive]}>{opt.label}</Text>
-            {selected === opt.value && <Ionicons name="checkmark" size={16} color={colors.primary} />}
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-// ─── Date sheet ───────────────────────────────────────────────────────────────
-
-function DateFilterSheet({ selected, onChange, onClose }: {
-  selected: DatePreset; onChange: (v: DatePreset) => void; onClose: () => void;
-}) {
-  return (
-    <View style={sheet.overlay}>
-      <View style={[sheet.panel, { maxHeight: '45%' }]}>
-        <View style={sheet.handle} />
-        <Text style={sheet.title}>Filtrer par date</Text>
-        {DATE_OPTIONS.map(opt => (
-          <TouchableOpacity key={opt.value} style={sheet.radioRow} onPress={() => { onChange(opt.value); onClose(); }}>
-            <Text style={[sheet.radioLabel, selected === opt.value && sheet.radioLabelActive]}>{opt.label}</Text>
-            {selected === opt.value && <Ionicons name="checkmark" size={16} color={colors.primary} />}
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
+  applyBtn: {
+    backgroundColor: colors.primary, borderRadius: radius.xl,
+    padding: spacing.md + 2, alignItems: 'center', marginTop: spacing.lg,
+  },
+  applyBtnText: { ...typography.label, color: '#fff', fontWeight: '700', fontSize: 15 },
+});
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function SearchEventsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
 
-  const [search, setSearch]             = useState('');
-  const [eventType, setEventType]       = useState<EventType | 'all'>('all');
-  const [disciplines, setDisciplines]   = useState<string[]>([]);
-  const [region, setRegion]             = useState<string | null>(null);
-  const [budget, setBudget]             = useState<BudgetPreset>('all');
-  const [datePreset, setDatePreset]     = useState<DatePreset>('all');
+  const [search,    setSearch]    = useState('');
+  const [eventType, setEventType] = useState<EventType | 'all'>('all');
+  const [filters,   setFilters]   = useState<FilterValues>({
+    disciplines: [], region: null, budget: 'all', date: 'all',
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [events,   setEvents]   = useState<Event[]>([]);
+  const [loading,  setLoading]  = useState(true);
 
-  const [showDisciplines, setShowDisciplines] = useState(false);
-  const [showRegion, setShowRegion]           = useState(false);
-  const [showBudget, setShowBudget]           = useState(false);
-  const [showDate, setShowDate]               = useState(false);
-
-  const [events, setEvents]   = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const activeFilterCount = [
-    disciplines.length > 0,
-    region !== null,
-    budget !== 'all',
-    datePreset !== 'all',
+  const activeCount = [
+    filters.disciplines.length > 0,
+    filters.region !== null,
+    filters.budget !== 'all',
+    filters.date !== 'all',
   ].filter(Boolean).length;
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
-
-    let query = supabase
-      .from('events')
-      .select('*')
+    let q = supabase.from('events').select('*')
       .eq('status', 'published')
       .order('start_date', { ascending: true })
       .limit(100);
 
-    if (search.trim()) {
-      query = query.or(`title.ilike.%${search.trim()}%,city.ilike.%${search.trim()}%`);
-    }
-    if (eventType !== 'all') {
-      query = query.eq('event_type', eventType);
-    }
-    if (disciplines.length > 0) {
-      query = query.overlaps('discipline_tags', disciplines);
-    }
-    if (region) {
-      query = query.eq('region', region);
-    }
+    if (search.trim())              q = q.or(`title.ilike.%${search.trim()}%,city.ilike.%${search.trim()}%`);
+    if (eventType !== 'all')        q = q.eq('event_type', eventType);
+    if (filters.disciplines.length) q = q.overlaps('discipline_tags', filters.disciplines);
+    if (filters.region)             q = q.eq('region', filters.region);
 
-    // Budget
-    if (budget === 'free') {
-      query = query.or('stand_price.is.null,stand_price.eq.0');
-    } else if (budget === 'under50') {
-      query = query.lte('stand_price', 50).not('stand_price', 'is', null);
-    } else if (budget === '50to150') {
-      query = query.gte('stand_price', 50).lte('stand_price', 150);
-    } else if (budget === 'over150') {
-      query = query.gt('stand_price', 150);
-    }
+    if (filters.budget === 'free')     q = q.or('stand_price.is.null,stand_price.eq.0');
+    else if (filters.budget === 'under50')  q = q.lte('stand_price', 50).not('stand_price', 'is', null);
+    else if (filters.budget === '50to150')  q = q.gte('stand_price', 50).lte('stand_price', 150);
+    else if (filters.budget === 'over150')  q = q.gt('stand_price', 150);
 
-    // Date
-    const dateRange = getDateRange(datePreset);
-    if (dateRange) {
-      // événements qui chevauchent la période
-      query = query
-        .lte('start_date', dateRange.to)
-        .gte('end_date', dateRange.from);
-    }
+    const range = getDateRange(filters.date);
+    if (range) q = q.lte('start_date', range.to).gte('end_date', range.from);
 
-    const { data } = await query;
+    const { data } = await q;
     setEvents(data ?? []);
     setLoading(false);
-  }, [search, eventType, disciplines, region, budget, datePreset]);
+  }, [search, eventType, filters]);
 
   useEffect(() => {
     const t = setTimeout(fetchEvents, search ? 350 : 0);
     return () => clearTimeout(t);
   }, [fetchEvents, search]);
 
-  const resetAllFilters = () => {
-    setEventType('all');
-    setDisciplines([]);
-    setRegion(null);
-    setBudget('all');
-    setDatePreset('all');
-  };
-
-  // Labels des chips
-  const regionLabel      = region ?? 'Région';
-  const budgetLabel      = BUDGET_OPTIONS.find(o => o.value === budget)!.short;
-  const dateLabel        = DATE_OPTIONS.find(o => o.value === datePreset)!.short;
-  const disciplineLabel  = disciplines.length > 0 ? `Disciplines (${disciplines.length})` : 'Disciplines';
+  const removeFilter = (k: keyof FilterValues) =>
+    setFilters(p => ({ ...p, [k]: k === 'disciplines' ? [] : k === 'region' ? null : 'all' }));
 
   return (
     <View style={[s.container, { paddingTop: insets.top + spacing.sm }]}>
-      {/* Search bar */}
-      <View style={s.searchWrap}>
+
+      {/* Search + Filter button */}
+      <View style={s.topRow}>
         <View style={s.searchBar}>
-          <Text style={s.searchIcon}>◎</Text>
+          <Ionicons name="search-outline" size={16} color={colors.text.secondary} />
           <TextInput
             style={s.searchInput}
             placeholder="Ville, nom du marché…"
@@ -338,78 +467,79 @@ export default function SearchEventsScreen({ navigation }: Props) {
             autoCapitalize="none"
           />
           {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')} style={s.clearBtn}>
-              <Text style={s.clearBtnText}>✕</Text>
+            <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close-circle" size={16} color={colors.text.secondary} />
             </TouchableOpacity>
           )}
         </View>
+        <TouchableOpacity
+          style={[s.filterBtn, activeCount > 0 && s.filterBtnActive]}
+          onPress={() => setShowFilters(true)}
+        >
+          <Ionicons name="options-outline" size={16} color={activeCount > 0 ? '#fff' : colors.text.primary} />
+          {activeCount > 0 && (
+            <View style={s.filterBadge}>
+              <Text style={s.filterBadgeText}>{activeCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Type chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.typeRow}>
         {EVENT_TYPES.map(t => (
           <TouchableOpacity
             key={t.value}
-            style={[s.chip, eventType === t.value && s.chipActive]}
+            style={[s.typeChip, eventType === t.value && s.typeChipActive]}
             onPress={() => setEventType(t.value)}
           >
-            <Text style={[s.chipText, eventType === t.value && s.chipTextActive]}>{t.label}</Text>
+            <Text style={s.typeChipIcon}>{t.icon}</Text>
+            <Text style={[s.typeChipText, eventType === t.value && s.typeChipTextActive]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Advanced filter chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
-        <TouchableOpacity
-          style={[s.chip, disciplines.length > 0 && s.chipActive]}
-          onPress={() => setShowDisciplines(true)}
-        >
-          <Text style={[s.chipText, disciplines.length > 0 && s.chipTextActive]}>{disciplineLabel}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[s.chip, region !== null && s.chipActive]}
-          onPress={() => setShowRegion(true)}
-        >
-          <Text style={[s.chipText, region !== null && s.chipTextActive]}>{regionLabel}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[s.chip, budget !== 'all' && s.chipActive]}
-          onPress={() => setShowBudget(true)}
-        >
-          <Text style={[s.chipText, budget !== 'all' && s.chipTextActive]}>{budgetLabel}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[s.chip, datePreset !== 'all' && s.chipActive]}
-          onPress={() => setShowDate(true)}
-        >
-          <Text style={[s.chipText, datePreset !== 'all' && s.chipTextActive]}>{dateLabel}</Text>
-        </TouchableOpacity>
-
-        {activeFilterCount > 0 && (
-          <TouchableOpacity style={s.chipReset} onPress={resetAllFilters}>
-            <Ionicons name="close" size={12} color={colors.error} />
-            <Text style={s.chipResetText}>Réinitialiser</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-
-      {/* Results count */}
-      {!loading && (
-        <View style={s.resultsRow}>
-          <Text style={s.resultsCount}>
-            {events.length} marché{events.length !== 1 ? 's' : ''} trouvé{events.length !== 1 ? 's' : ''}
-          </Text>
-          {activeFilterCount > 0 && (
-            <View style={s.filterBadge}>
-              <Text style={s.filterBadgeText}>{activeFilterCount} filtre{activeFilterCount > 1 ? 's' : ''}</Text>
-            </View>
+      {/* Active filter chips */}
+      {activeCount > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.activeRow}>
+          {filters.disciplines.length > 0 && (
+            <ActiveChip
+              label={`Disciplines (${filters.disciplines.length})`}
+              onRemove={() => removeFilter('disciplines')}
+            />
           )}
-        </View>
+          {filters.region && (
+            <ActiveChip label={filters.region} onRemove={() => removeFilter('region')} />
+          )}
+          {filters.budget !== 'all' && (
+            <ActiveChip
+              label={BUDGET_OPTIONS.find(o => o.value === filters.budget)!.short}
+              onRemove={() => removeFilter('budget')}
+            />
+          )}
+          {filters.date !== 'all' && (
+            <ActiveChip
+              label={DATE_OPTIONS.find(o => o.value === filters.date)!.short}
+              onRemove={() => removeFilter('date')}
+            />
+          )}
+          <TouchableOpacity
+            style={s.clearAll}
+            onPress={() => setFilters({ disciplines: [], region: null, budget: 'all', date: 'all' })}
+          >
+            <Text style={s.clearAllText}>Tout effacer</Text>
+          </TouchableOpacity>
+        </ScrollView>
       )}
 
+      {/* Count */}
+      {!loading && (
+        <Text style={s.count}>
+          {events.length} marché{events.length !== 1 ? 's' : ''}
+        </Text>
+      )}
+
+      {/* List */}
       {loading ? (
         <View style={s.centered}><ActivityIndicator color={colors.primary} size="large" /></View>
       ) : (
@@ -422,46 +552,29 @@ export default function SearchEventsScreen({ navigation }: Props) {
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={s.emptyState}>
-              <View style={s.emptyDot} />
-              <View>
-                <Text style={s.emptyTitle}>Aucun marché trouvé</Text>
-                <Text style={s.emptySubtitle}>Essayez d'élargir vos filtres</Text>
-              </View>
+            <View style={s.empty}>
+              <Ionicons name="search-outline" size={40} color={colors.border} />
+              <Text style={s.emptyTitle}>Aucun marché trouvé</Text>
+              <Text style={s.emptySub}>Élargissez vos filtres ou changez de région</Text>
+              {activeCount > 0 && (
+                <TouchableOpacity
+                  style={s.emptyReset}
+                  onPress={() => setFilters({ disciplines: [], region: null, budget: 'all', date: 'all' })}
+                >
+                  <Text style={s.emptyResetText}>Réinitialiser les filtres</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
         />
       )}
 
-      {/* Filter sheets */}
-      {showDisciplines && (
-        <DisciplineFilterSheet
-          selected={disciplines}
-          onChange={setDisciplines}
-          onClose={() => setShowDisciplines(false)}
-        />
-      )}
-      {showRegion && (
-        <RegionFilterSheet
-          selected={region}
-          onChange={setRegion}
-          onClose={() => setShowRegion(false)}
-        />
-      )}
-      {showBudget && (
-        <BudgetFilterSheet
-          selected={budget}
-          onChange={setBudget}
-          onClose={() => setShowBudget(false)}
-        />
-      )}
-      {showDate && (
-        <DateFilterSheet
-          selected={datePreset}
-          onChange={setDatePreset}
-          onClose={() => setShowDate(false)}
-        />
-      )}
+      <FiltersSheet
+        visible={showFilters}
+        values={filters}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
     </View>
   );
 }
@@ -471,114 +584,52 @@ export default function SearchEventsScreen({ navigation }: Props) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
 
-  searchWrap: { paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
+  topRow:     { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
   searchBar: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1, borderColor: colors.border,
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: colors.surface, borderRadius: radius.xl,
+    paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.border,
   },
-  searchIcon:   { fontSize: 15, color: colors.text.secondary, marginRight: spacing.sm },
-  searchInput:  { flex: 1, ...typography.body, color: colors.text.primary, paddingVertical: 14 },
-  clearBtn:     { padding: spacing.sm },
-  clearBtnText: { color: colors.text.secondary, fontSize: 14 },
+  searchInput:  { flex: 1, ...typography.body, color: colors.text.primary, paddingVertical: 13 },
+  filterBtn: {
+    width: 46, height: 46, borderRadius: radius.md,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  filterBtnActive:  { backgroundColor: colors.primary, borderColor: colors.primary },
+  filterBadge: {
+    position: 'absolute', top: -4, right: -4,
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: colors.error, alignItems: 'center', justifyContent: 'center',
+  },
+  filterBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 
-  chipRow: { paddingHorizontal: spacing.xl, gap: spacing.xs, paddingBottom: spacing.sm },
-  chip: {
-    paddingHorizontal: spacing.md, paddingVertical: 7,
+  typeRow: { paddingHorizontal: spacing.xl, gap: spacing.xs, paddingBottom: spacing.sm },
+  typeChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: spacing.md, paddingVertical: 8,
     borderRadius: radius.full, borderWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  chipActive:     { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText:       { ...typography.caption, color: colors.text.secondary, fontWeight: '500' },
-  chipTextActive: { color: colors.text.inverse, fontWeight: '700' },
-  chipReset: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: spacing.md, paddingVertical: 7,
-    borderRadius: radius.full, borderWidth: 1, borderColor: colors.error + '60',
-    backgroundColor: colors.error + '10',
+  typeChipActive:     { backgroundColor: colors.primary, borderColor: colors.primary },
+  typeChipIcon:       { fontSize: 13 },
+  typeChipText:       { ...typography.caption, color: colors.text.secondary, fontWeight: '500' },
+  typeChipTextActive: { color: '#fff', fontWeight: '700' },
+
+  activeRow: { paddingHorizontal: spacing.xl, gap: spacing.xs, paddingBottom: spacing.sm },
+  clearAll: {
+    paddingHorizontal: spacing.sm, paddingVertical: 5,
+    borderRadius: radius.full,
   },
-  chipResetText: { ...typography.caption, color: colors.error, fontWeight: '600' },
+  clearAllText: { ...typography.caption, color: colors.error, fontWeight: '600' },
 
-  resultsRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
-  resultsCount:{ ...typography.caption, color: colors.text.secondary },
-  filterBadge: { backgroundColor: colors.primary + '20', borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 2 },
-  filterBadgeText: { ...typography.caption, color: colors.primary, fontWeight: '700' },
-
+  count:   { ...typography.caption, color: colors.text.secondary, paddingHorizontal: spacing.xl, marginBottom: spacing.sm },
   list:    { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
   centered:{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: spacing.xxl },
 
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1, borderColor: colors.border,
-    borderLeftWidth: 3,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
-  },
-  cardTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  typePill:     { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radius.full },
-  typePillText: { ...typography.caption, fontWeight: '700', textTransform: 'capitalize' },
-  price:        { ...typography.label, color: colors.secondary, fontWeight: '700' },
-  cardTitle:    { ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs },
-  cardMeta:     { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
-  tagRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm },
-  tag:          { borderWidth: 1, borderColor: colors.border, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 3 },
-  tagText:      { ...typography.caption, color: colors.text.secondary },
-  tagMore:      { ...typography.caption, color: colors.text.secondary, alignSelf: 'center' },
-  cardFooter:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  stands:       { ...typography.caption, color: colors.text.secondary },
-  ctaPill:      { paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.full },
-  ctaText:      { ...typography.caption, fontWeight: '700' },
-
-  emptyState: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl, padding: spacing.xl,
-    borderWidth: 1, borderColor: colors.border, borderStyle: 'dashed',
-    marginTop: spacing.xl,
-  },
-  emptyDot:     { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.text.secondary + '40' },
-  emptyTitle:   { ...typography.h3, color: colors.text.primary, marginBottom: spacing.xs },
-  emptySubtitle:{ ...typography.body, color: colors.text.secondary },
-});
-
-const sheet = StyleSheet.create({
-  overlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', zIndex: 100,
-  },
-  panel: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
-    padding: spacing.xl, maxHeight: '75%',
-  },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: spacing.lg },
-  title:  { ...typography.h3, color: colors.text.primary, marginBottom: spacing.lg, fontWeight: '700' },
-
-  // Discipline tags
-  tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, paddingBottom: spacing.lg },
-  tag:     { borderWidth: 1, borderColor: colors.border, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 5 },
-  tagActive:     { backgroundColor: colors.primary, borderColor: colors.primary },
-  tagText:       { ...typography.caption, color: colors.text.secondary },
-  tagTextActive: { color: colors.text.inverse, fontWeight: '600' },
-
-  // Radio rows (région, budget, date)
-  radioRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1, borderBottomColor: colors.border + '60',
-  },
-  radioLabel:       { ...typography.body, color: colors.text.primary },
-  radioLabelActive: { color: colors.primary, fontWeight: '600' },
-
-  // Action buttons (discipline sheet)
-  actions:      { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  btnReset:     { flex: 1, padding: spacing.md, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-  btnResetText: { ...typography.label, color: colors.text.secondary },
-  btnApply:     { flex: 2, padding: spacing.md, borderRadius: radius.xl, backgroundColor: colors.primary, alignItems: 'center' },
-  btnApplyText: { ...typography.label, color: colors.text.inverse, fontWeight: '700' },
+  empty:      { alignItems: 'center', paddingTop: spacing.xxl, paddingHorizontal: spacing.xl },
+  emptyTitle: { ...typography.h3, color: colors.text.primary, marginTop: spacing.md, marginBottom: spacing.xs },
+  emptySub:   { ...typography.body, color: colors.text.secondary, textAlign: 'center', lineHeight: 22 },
+  emptyReset: { marginTop: spacing.lg, paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.primary },
+  emptyResetText: { ...typography.label, color: colors.primary, fontWeight: '600' },
 });
