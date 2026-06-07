@@ -1,0 +1,42 @@
+name: Deploy Web → Hostinger
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'web/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          timeout: 600s
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "→ Git pull"
+            git pull origin master
+
+            echo "→ Install dependencies"
+            cd web
+            npm ci --prefer-offline
+
+            echo "→ Build Next.js"
+            npm run build
+
+            echo "→ Restart app (Passenger)"
+            mkdir -p tmp
+            touch tmp/restart.txt
+
+            echo "✓ Déploiement terminé"
